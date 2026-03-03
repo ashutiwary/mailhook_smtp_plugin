@@ -1,0 +1,1053 @@
+/**
+ * MailHook — Admin Settings Page Styles
+ */
+
+/* ──────────── Layout ──────────── */
+.mailhook-wrap {
+    max-width: 1100px;
+    margin: 20px auto 40px;
+}
+
+/* ──────────── Header ──────────── */
+.mailhook-header {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.mailhook-header h1 {
+    color: #fff;
+    font-size: 26px;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.mailhook-logo {
+    font-size: 30px;
+}
+
+.mailhook-tagline {
+    color: #e0e7ff;
+    margin: 6px 0 0;
+    font-size: 14px;
+}
+
+/* ──────────── Cards ──────────── */
+.mailhook-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s ease;
+}
+
+.mailhook-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.mailhook-card-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+/* ──────────── Form Table ──────────── */
+.mailhook-table th {
+    width: 160px;
+    font-weight: 500;
+    color: #374151;
+    padding: 14px 10px 14px 0;
+    vertical-align: top;
+}
+
+.mailhook-table td {
+    padding: 10px 0;
+}
+
+.mailhook-table input[type="text"],
+.mailhook-table input[type="email"],
+.mailhook-table input[type="password"],
+.mailhook-table input[type="number"],
+.mailhook-table select {
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mailhook-table input:focus,
+.mailhook-table select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    outline: none;
+}
+
+.mailhook-table .description {
+    color: #94a3b8;
+    font-size: 12.5px;
+    margin-top: 4px;
+}
+
+/* ──────────── Toggle Switch ──────────── */
+.mailhook-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.mailhook-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.mailhook-toggle-slider {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #cbd5e1;
+    border-radius: 24px;
+    transition: background 0.3s;
+    flex-shrink: 0;
+}
+
+.mailhook-toggle-slider::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.mailhook-toggle input:checked+.mailhook-toggle-slider {
+    background: #6366f1;
+}
+
+.mailhook-toggle input:checked+.mailhook-toggle-slider::after {
+    transform: translateX(20px);
+}
+
+.mailhook-toggle-label {
+    font-size: 13.5px;
+    color: #475569;
+}
+
+/* ──────────── Test Email ──────────── */
+.mailhook-test-card {
+    border: 2px dashed #c7d2fe;
+    background: #f5f3ff;
+}
+
+.mailhook-test-card:hover {
+    border-color: #a5b4fc;
+}
+
+.mailhook-test-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.mailhook-test-form input[type="email"] {
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    flex: 1;
+}
+
+.mailhook-test-form input[type="email"]:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    outline: none;
+}
+
+.mailhook-test-form .button {
+    white-space: nowrap;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* ──────────── Test Result Messages ──────────── */
+.mailhook-test-result {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.mailhook-test-result.success {
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #065f46;
+}
+
+.mailhook-test-result.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+.mailhook-test-result.info {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+}
+
+/* ──────────── Notice ──────────── */
+.mailhook-notice-wrap {
+    margin-bottom: 20px;
+}
+
+.mailhook-notice {
+    background: #ecfdf5 !important;
+    border-left-color: #10b981 !important;
+    border-radius: 8px;
+    padding: 12px 16px !important;
+}
+
+.mailhook-notice p,
+.mailhook-notice strong {
+    color: #065f46 !important;
+    font-size: 14px;
+}
+
+/* ──────────── Submit Button ──────────── */
+.mailhook-form .button-hero {
+    background: #6366f1 !important;
+    border-color: #4f46e5 !important;
+    color: #fff !important;
+    font-size: 15px;
+    padding: 12px 32px !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
+    transition: all 0.2s ease;
+}
+
+.mailhook-form .button-hero:hover {
+    background: #4f46e5 !important;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45) !important;
+    transform: translateY(-1px);
+}
+
+/* ──────────── Footer ──────────── */
+.mailhook-footer {
+    text-align: center;
+    padding: 16px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* ──────────── Responsive ──────────── */
+@media (max-width: 782px) {
+    .mailhook-wrap {
+        margin: 10px;
+    }
+
+    .mailhook-header {
+        padding: 20px;
+    }
+
+    .mailhook-card {
+        padding: 16px;
+    }
+
+    .mailhook-table th {
+        display: block;
+        width: 100%;
+        padding-bottom: 2px;
+    }
+
+    .mailhook-table td {
+        display: block;
+        padding-top: 0;
+    }
+
+    .mailhook-test-form {
+        flex-direction: column;
+    }
+
+    .mailhook-test-form input[type="email"],
+    .mailhook-test-form .button {
+        width: 100%;
+    }
+}
+
+/* ════════════════════════════════════════════════════════
+   EMAIL LOGS PAGE STYLES
+   ════════════════════════════════════════════════════════ */
+
+/* ──────────── Stats Row ──────────── */
+.mailhook-stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.mailhook-stat-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: box-shadow 0.2s, transform 0.2s;
+    border-left: 4px solid transparent;
+}
+
+.mailhook-stat-card:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.mailhook-stat-total {
+    border-left-color: #6366f1;
+}
+
+.mailhook-stat-sent {
+    border-left-color: #10b981;
+}
+
+.mailhook-stat-failed {
+    border-left-color: #ef4444;
+}
+
+.mailhook-stat-recent {
+    border-left-color: #f59e0b;
+}
+
+.mailhook-stat-icon {
+    font-size: 28px;
+    line-height: 1;
+}
+
+.mailhook-stat-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.mailhook-stat-number {
+    font-size: 26px;
+    font-weight: 700;
+    color: #1e293b;
+    line-height: 1.2;
+}
+
+.mailhook-stat-label {
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* ──────────── Filters Bar ──────────── */
+.mailhook-filters-bar {
+    padding: 16px 20px !important;
+    margin-bottom: 20px;
+}
+
+.mailhook-filters-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.mailhook-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mailhook-filter-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.mailhook-filter-group select,
+.mailhook-filter-group input[type="text"] {
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 13px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mailhook-filter-group select:focus,
+.mailhook-filter-group input[type="text"]:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    outline: none;
+}
+
+.mailhook-filter-search {
+    flex: 1;
+    min-width: 200px;
+}
+
+.mailhook-filter-search input {
+    width: 100%;
+}
+
+.mailhook-btn-clear {
+    color: #64748b !important;
+}
+
+/* ──────────── Bulk Actions Bar ──────────── */
+.mailhook-bulk-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+}
+
+.mailhook-select-all-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #475569;
+    cursor: pointer;
+}
+
+.mailhook-btn-danger {
+    background: #ef4444 !important;
+    border-color: #dc2626 !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    font-size: 12.5px !important;
+}
+
+.mailhook-btn-danger:hover {
+    background: #dc2626 !important;
+}
+
+.mailhook-btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.mailhook-btn-danger-outline {
+    background: transparent !important;
+    border-color: #fca5a5 !important;
+    color: #ef4444 !important;
+    border-radius: 6px !important;
+    font-size: 12.5px !important;
+}
+
+.mailhook-btn-danger-outline:hover {
+    background: #fef2f2 !important;
+}
+
+.mailhook-bulk-count {
+    margin-left: auto;
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* ──────────── Logs Table ──────────── */
+.mailhook-logs-table-wrap {
+    overflow-x: auto;
+}
+
+.mailhook-logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    table-layout: fixed;
+}
+
+.mailhook-logs-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mailhook-logs-table tbody td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.mh-col-to {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mailhook-log-row {
+    transition: background 0.15s;
+}
+
+.mailhook-log-row:hover {
+    background: #f8fafc;
+}
+
+.mailhook-row-failed {
+    background: #fef7f7;
+}
+
+.mailhook-row-failed:hover {
+    background: #fef2f2;
+}
+
+.mh-col-check {
+    width: 40px;
+    text-align: center;
+}
+
+.mh-col-status {
+    width: 100px;
+}
+
+.mh-col-to {
+    width: 25%;
+}
+
+.mh-col-subject {
+    width: 25%;
+}
+
+.mh-col-source {
+    width: 12%;
+}
+
+.mh-col-date {
+    width: 18%;
+    white-space: nowrap;
+}
+
+.mh-col-action {
+    width: 80px;
+    text-align: right;
+}
+
+.mh-col-subject {
+    white-space: normal !important;
+    word-break: break-word;
+}
+
+/* Status Badges */
+.mailhook-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.mailhook-badge-sent {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.mailhook-badge-failed {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* Source Tag */
+.mailhook-source-tag {
+    display: inline-block;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Inline Error Row */
+.mailhook-error-row td {
+    padding: 0 14px 12px 50px !important;
+    border-bottom: 1px solid #fecaca;
+    background: #fef7f7;
+}
+
+.mailhook-inline-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 12.5px;
+    color: #991b1b;
+}
+
+/* View button */
+.mailhook-view-btn {
+    border-radius: 6px !important;
+    font-size: 12px !important;
+}
+
+/* ──────────── Empty State ──────────── */
+.mailhook-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.mailhook-empty-icon {
+    font-size: 56px;
+    display: block;
+    margin-bottom: 16px;
+}
+
+.mailhook-empty-state h3 {
+    color: #1e293b;
+    font-size: 20px;
+    margin: 0 0 8px;
+}
+
+.mailhook-empty-state p {
+    color: #64748b;
+    font-size: 14px;
+    max-width: 380px;
+    margin: 0 auto;
+}
+
+/* ──────────── Pagination ──────────── */
+.mailhook-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px 0 8px;
+}
+
+.mailhook-page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #475569;
+    background: #fff;
+    text-decoration: none;
+    transition: all 0.15s;
+}
+
+.mailhook-page-btn:hover {
+    background: #f1f5f9;
+    border-color: #6366f1;
+    color: #6366f1;
+}
+
+.mailhook-page-btn.active {
+    background: #6366f1;
+    border-color: #6366f1;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* ──────────── Detail Modal ──────────── */
+.mailhook-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mailhook-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.mailhook-modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 720px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    padding: 32px;
+    animation: mhModalIn 0.25s ease;
+}
+
+@keyframes mhModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.mailhook-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.15s;
+}
+
+.mailhook-modal-close:hover {
+    color: #1e293b;
+}
+
+.mailhook-modal-loading {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+    font-size: 16px;
+}
+
+/* ──────────── Detail Content ──────────── */
+.mailhook-detail h2 {
+    font-size: 18px;
+    color: #1e293b;
+    margin: 0 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.mailhook-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+    margin-bottom: 20px;
+}
+
+.mailhook-detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.mailhook-detail-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.mailhook-detail-value {
+    font-size: 14px;
+    color: #1e293b;
+    word-break: break-word;
+}
+
+.mailhook-detail-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #991b1b;
+    font-size: 13.5px;
+    margin-bottom: 20px;
+}
+
+.mailhook-detail-section {
+    margin-bottom: 20px;
+}
+
+.mailhook-detail-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin: 0 0 8px;
+}
+
+.mailhook-detail-section pre {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 12.5px;
+    color: #334155;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.mailhook-html-preview {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.mailhook-detail-body-preview {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* ──────────── Logs Page Responsive ──────────── */
+@media (max-width: 900px) {
+    .mailhook-stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .mailhook-stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .mailhook-filters-inner {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mailhook-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mailhook-modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+
+    .mh-col-source {
+        display: none;
+    }
+}
+
+/* ════════════════════════════════════════════════════════
+   EMAIL TEMPLATES PAGE STYLES
+   ════════════════════════════════════════════════════════ */
+
+.mailhook-templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.mailhook-template-card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.mailhook-template-card input[type="radio"] {
+    display: none;
+}
+
+.mailhook-template-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.mailhook-template-card.active {
+    border-color: #10b981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.mailhook-template-preview {
+    height: 140px;
+    background: #f1f5f9;
+    position: relative;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* CSS Mini-Previews */
+.mh-line {
+    background: #cbd5e1;
+    height: 6px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.mh-h-thick {
+    height: 12px;
+}
+
+.mh-w-40 {
+    width: 40%;
+}
+
+.mh-w-50 {
+    width: 50%;
+}
+
+.mh-w-60 {
+    width: 60%;
+}
+
+.mh-w-70 {
+    width: 70%;
+}
+
+.mh-w-80 {
+    width: 80%;
+}
+
+.mh-w-90 {
+    width: 90%;
+}
+
+.mh-w-100 {
+    width: 100%;
+}
+
+.mh-preview-text-lines {
+    width: 60%;
+}
+
+.mh-preview-modern {
+    background: #e2e8f0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.mh-preview-modern::after {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 100px;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.mh-preview-modern-header {
+    background: #6366f1;
+    height: 24px;
+    width: 120px;
+    position: absolute;
+    top: 20px;
+    z-index: 2;
+    border-radius: 6px 6px 0 0;
+}
+
+.mh-preview-modern-body {
+    position: absolute;
+    top: 54px;
+    left: 70px;
+    /* center relative to 240px container */
+    width: 100px;
+    z-index: 2;
+}
+
+.mh-preview-classic {
+    background: #fff;
+}
+
+.mh-preview-classic-inner {
+    width: 140px;
+    height: 110px;
+    border: 1px solid #cbd5e1;
+    padding: 12px;
+}
+
+.mh-preview-classic-header {
+    border-bottom: 2px solid #6366f1;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+}
+
+.mh-preview-custom {
+    background: #0f172a;
+    color: #38bdf8;
+    font-family: monospace;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.mh-code-icon {
+    opacity: 0.8;
+}
+
+.mailhook-template-info {
+    padding: 16px;
+    background: #fff;
+    flex: 1;
+}
+
+.mailhook-template-info strong {
+    display: block;
+    font-size: 15px;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.mailhook-template-info p {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.mh-green-btn {
+    background: #10b981 !important;
+    border-color: #059669 !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+}
+
+.mh-green-btn:hover {
+    background: #059669 !important;
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45) !important;
+}

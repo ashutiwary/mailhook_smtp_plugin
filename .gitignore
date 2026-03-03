@@ -1,0 +1,17 @@
+# User environment
+.DS_Store
+.vscode/
+
+# Web server logs
+*.log
+
+# Codebase backups
+*.bak
+*.zip
+*.tar.gz
+*.tar.bz2
+
+# Ignore OS-specific files
+.AppleDouble
+.LSOverride
+._*
