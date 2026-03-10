@@ -2,7 +2,7 @@
 
 A lightweight WordPress SMTP plugin that reconfigures WordPress to send all emails through your proper SMTP server instead of the unreliable PHP `mail()` function. Reliable, secure, and easy to set up.
 
-## 🚀 Features
+## Features
 
 - **Flexible Configuration**: Configure any SMTP server (Gmail, Outlook, SendGrid, Amazon SES, Brevo, Fastmail, etc.).
 - **Security First**: Passwords are securely encrypted using AES-256-CBC before being saved to the WordPress database.
@@ -20,7 +20,7 @@ A lightweight WordPress SMTP plugin that reconfigures WordPress to send all emai
 3. Reactivate the plugin through the **Plugins** menu in WordPress.
 4. Go to **Settings → MailHook** to configure your SMTP credentials and options.
 
-## ⚙️ Quick Setup (Gmail Example)
+## Quick Setup (Gmail Example)
 
 1. Navigate to **Settings → MailHook**.
 2. **Host**: `smtp.gmail.com`

@@ -281,7 +281,6 @@ class MailHook_Logger {
         <div class="wrap mailhook-wrap">
             <div class="mailhook-header">
                 <h1>
-                    <span class="mailhook-logo">📋</span>
                     <?php _e( 'Email Logs', 'mailhook' ); ?>
                 </h1>
                 <p class="mailhook-tagline"><?php _e( 'Monitor every email sent from your WordPress site.', 'mailhook' ); ?></p>
@@ -290,28 +289,28 @@ class MailHook_Logger {
             <!-- Stats Cards -->
             <div class="mailhook-stats-row">
                 <div class="mailhook-stat-card mailhook-stat-total">
-                    <span class="mailhook-stat-icon">📧</span>
+                    <span class="mailhook-stat-icon"></span>
                     <div class="mailhook-stat-body">
                         <span class="mailhook-stat-number"><?php echo esc_html( $total_sent + $total_failed ); ?></span>
                         <span class="mailhook-stat-label"><?php _e( 'Total Emails', 'mailhook' ); ?></span>
                     </div>
                 </div>
                 <div class="mailhook-stat-card mailhook-stat-sent">
-                    <span class="mailhook-stat-icon">✅</span>
+                    <span class="mailhook-stat-icon"></span>
                     <div class="mailhook-stat-body">
                         <span class="mailhook-stat-number"><?php echo esc_html( $total_sent ); ?></span>
                         <span class="mailhook-stat-label"><?php _e( 'Sent', 'mailhook' ); ?></span>
                     </div>
                 </div>
                 <div class="mailhook-stat-card mailhook-stat-failed">
-                    <span class="mailhook-stat-icon">❌</span>
+                    <span class="mailhook-stat-icon"></span>
                     <div class="mailhook-stat-body">
                         <span class="mailhook-stat-number"><?php echo esc_html( $total_failed ); ?></span>
                         <span class="mailhook-stat-label"><?php _e( 'Failed', 'mailhook' ); ?></span>
                     </div>
                 </div>
                 <div class="mailhook-stat-card mailhook-stat-recent">
-                    <span class="mailhook-stat-icon">🕐</span>
+                    <span class="mailhook-stat-icon"></span>
                     <div class="mailhook-stat-body">
                         <span class="mailhook-stat-number"><?php echo esc_html( $last_24h ); ?></span>
                         <span class="mailhook-stat-label"><?php _e( 'Last 24 Hours', 'mailhook' ); ?></span>
@@ -337,9 +336,9 @@ class MailHook_Logger {
                             <input type="text" id="mh-filter-search" name="s" value="<?php echo esc_attr( $search ); ?>"
                                    placeholder="<?php esc_attr_e( 'Recipient, subject, or source…', 'mailhook' ); ?>" />
                         </div>
-                        <button type="submit" class="button"><?php _e( '🔍 Filter', 'mailhook' ); ?></button>
+                        <button type="submit" class="button"><?php _e( 'Filter', 'mailhook' ); ?></button>
                         <?php if ( $status_filter || $search ) : ?>
-                            <a href="<?php echo esc_url( $page_url ); ?>" class="button mailhook-btn-clear"><?php _e( '✕ Clear', 'mailhook' ); ?></a>
+                            <a href="<?php echo esc_url( $page_url ); ?>" class="button mailhook-btn-clear"><?php _e( 'Clear', 'mailhook' ); ?></a>
                         <?php endif; ?>
                     </div>
                 </form>
@@ -349,7 +348,7 @@ class MailHook_Logger {
             <div class="mailhook-card mailhook-logs-table-wrap">
                 <?php if ( empty( $logs ) ) : ?>
                     <div class="mailhook-empty-state">
-                        <span class="mailhook-empty-icon">📭</span>
+                        <span class="mailhook-empty-icon"></span>
                         <h3><?php _e( 'No emails logged yet', 'mailhook' ); ?></h3>
                         <p><?php _e( 'Emails sent through your site will appear here. Try sending a test email from the Settings page.', 'mailhook' ); ?></p>
                     </div>
@@ -362,10 +361,10 @@ class MailHook_Logger {
                                 <span><?php _e( 'Select All', 'mailhook' ); ?></span>
                             </label>
                             <button type="button" id="mh-delete-selected" class="button mailhook-btn-danger" disabled>
-                                <?php _e( '🗑️ Delete Selected', 'mailhook' ); ?>
+                                <?php _e( 'Delete Selected', 'mailhook' ); ?>
                             </button>
                             <button type="button" id="mh-delete-all" class="button mailhook-btn-danger-outline">
-                                <?php _e( '🗑️ Delete All Logs', 'mailhook' ); ?>
+                                <?php _e( 'Delete All Logs', 'mailhook' ); ?>
                             </button>
                             <span class="mailhook-bulk-count">
                                 <?php printf( __( '%s emails', 'mailhook' ), '<strong>' . intval( $total_items ) . '</strong>' ); ?>
@@ -392,7 +391,7 @@ class MailHook_Logger {
                                         </td>
                                         <td class="mh-col-status">
                                             <span class="mailhook-badge mailhook-badge-<?php echo esc_attr( $log->status ); ?>">
-                                                <?php echo $log->status === 'sent' ? '✅ ' . __( 'Sent', 'mailhook' ) : '❌ ' . __( 'Failed', 'mailhook' ); ?>
+                                                <?php echo $log->status === 'sent' ? '' . __( 'Sent', 'mailhook' ) : '' . __( 'Failed', 'mailhook' ); ?>
                                             </span>
                                         </td>
                                         <td class="mh-col-to"><?php echo esc_html( $log->to_email ); ?></td>
@@ -401,14 +400,14 @@ class MailHook_Logger {
                                         <td class="mh-col-date"><?php echo esc_html( date_i18n( 'M j, Y  g:i A', strtotime( $log->date_time ) ) ); ?></td>
                                         <td class="mh-col-action">
                                             <button type="button" class="button button-small mailhook-view-btn" data-id="<?php echo intval( $log->id ); ?>">
-                                                <?php _e( '👁️ View', 'mailhook' ); ?>
+                                                <?php _e( 'View', 'mailhook' ); ?>
                                             </button>
                                         </td>
                                     </tr>
                                     <?php if ( $log->status === 'failed' && ! empty( $log->error ) ) : ?>
                                         <tr class="mailhook-error-row">
                                             <td colspan="7">
-                                                <div class="mailhook-inline-error">⚠️ <?php echo esc_html( $log->error ); ?></div>
+                                                <div class="mailhook-inline-error"><?php echo esc_html( $log->error ); ?></div>
                                             </td>
                                         </tr>
                                     <?php endif; ?>
@@ -443,7 +442,7 @@ class MailHook_Logger {
                 <div class="mailhook-modal-content">
                     <button type="button" class="mailhook-modal-close">&times;</button>
                     <div id="mailhook-modal-body">
-                        <div class="mailhook-modal-loading">⏳ <?php _e( 'Loading…', 'mailhook' ); ?></div>
+                        <div class="mailhook-modal-loading"><?php _e( 'Loading…', 'mailhook' ); ?></div>
                     </div>
                 </div>
             </div>
@@ -521,7 +520,7 @@ class MailHook_Logger {
                 btn.addEventListener('click', function(){
                     var id = btn.getAttribute('data-id');
                     modal.style.display = 'flex';
-                    mBody.innerHTML = '<div class="mailhook-modal-loading">⏳ Loading…</div>';
+                    mBody.innerHTML = '<div class="mailhook-modal-loading">Loading…</div>';
 
                     var fd = new FormData();
                     fd.append('action', 'mailhook_view_log');
@@ -534,11 +533,11 @@ class MailHook_Logger {
                         if (d.success) {
                             mBody.innerHTML = d.data;
                         } else {
-                            mBody.innerHTML = '<p style="color:#991b1b;">❌ ' + (d.data||'Error') + '</p>';
+                            mBody.innerHTML = '<p style="color:#991b1b;">' + (d.data||'Error') + '</p>';
                         }
                     })
                     .catch(function(err){
-                        mBody.innerHTML = '<p style="color:#991b1b;">❌ ' + err.message + '</p>';
+                        mBody.innerHTML = '<p style="color:#991b1b;">' + err.message + '</p>';
                     });
                 });
             });
@@ -574,8 +573,8 @@ class MailHook_Logger {
         }
 
         $status_badge = $log->status === 'sent'
-            ? '<span class="mailhook-badge mailhook-badge-sent">✅ Sent</span>'
-            : '<span class="mailhook-badge mailhook-badge-failed">❌ Failed</span>';
+            ? '<span class="mailhook-badge mailhook-badge-sent">Sent</span>'
+            : '<span class="mailhook-badge mailhook-badge-failed">Failed</span>';
 
         $html  = '<div class="mailhook-detail">';
         $html .= '<h2>' . esc_html( $log->subject ) . ' ' . $status_badge . '</h2>';
@@ -583,10 +582,10 @@ class MailHook_Logger {
 
         // Meta info
         $fields = array(
-            '📬 To'         => esc_html( $log->to_email ),
-            '📤 From'       => esc_html( $log->from_name . ' <' . $log->from_email . '>' ),
-            '📅 Date'       => esc_html( date_i18n( 'F j, Y  g:i:s A', strtotime( $log->date_time ) ) ),
-            '🔌 Source'     => esc_html( $log->source ),
+            'To'         => esc_html( $log->to_email ),
+            'From'       => esc_html( $log->from_name . ' <' . $log->from_email . '>' ),
+            'Date'       => esc_html( date_i18n( 'F j, Y  g:i:s A', strtotime( $log->date_time ) ) ),
+            'Source'     => esc_html( $log->source ),
         );
 
         foreach ( $fields as $label => $value ) {
@@ -597,21 +596,21 @@ class MailHook_Logger {
 
         // Error
         if ( $log->status === 'failed' && ! empty( $log->error ) ) {
-            $html .= '<div class="mailhook-detail-error"><strong>⚠️ Error:</strong> ' . esc_html( $log->error ) . '</div>';
+            $html .= '<div class="mailhook-detail-error"><strong>Error:</strong> ' . esc_html( $log->error ) . '</div>';
         }
 
         // Headers
         if ( ! empty( $log->headers ) ) {
-            $html .= '<div class="mailhook-detail-section"><h3>📋 Headers</h3><pre>' . esc_html( $log->headers ) . '</pre></div>';
+            $html .= '<div class="mailhook-detail-section"><h3>Headers</h3><pre>' . esc_html( $log->headers ) . '</pre></div>';
         }
 
         // Attachments
         if ( ! empty( $log->attachments ) ) {
-            $html .= '<div class="mailhook-detail-section"><h3>📎 Attachments</h3><p>' . esc_html( $log->attachments ) . '</p></div>';
+            $html .= '<div class="mailhook-detail-section"><h3>Attachments</h3><p>' . esc_html( $log->attachments ) . '</p></div>';
         }
 
         // Message body
-        $html .= '<div class="mailhook-detail-section"><h3>💬 Message Body</h3><div class="mailhook-detail-body-preview">';
+        $html .= '<div class="mailhook-detail-section"><h3>Message Body</h3><div class="mailhook-detail-body-preview">';
         // If the message looks like HTML, render it inside an iframe-safe div
         if ( strpos( $log->message, '<' ) !== false && strpos( $log->message, '>' ) !== false ) {
             $html .= '<div class="mailhook-html-preview">' . wp_kses_post( $log->message ) . '</div>';

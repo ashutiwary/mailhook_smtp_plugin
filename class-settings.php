@@ -42,7 +42,7 @@ class MailHook_Settings {
         add_submenu_page(
             'mailhook',
             __( 'Settings', 'mailhook' ),
-            __( '⚙️ Settings', 'mailhook' ),
+            __( 'Settings', 'mailhook' ),
             'manage_options',
             'mailhook',
             array( $this, 'render_page' )
@@ -52,7 +52,7 @@ class MailHook_Settings {
         add_submenu_page(
             'mailhook',
             __( 'Email Logs', 'mailhook' ),
-            __( '📋 Email Logs', 'mailhook' ),
+            __( 'Email Logs', 'mailhook' ),
             'manage_options',
             'mailhook-logs',
             array( 'MailHook_Logger', 'render_page' )
@@ -161,7 +161,6 @@ class MailHook_Settings {
         <div class="wrap mailhook-wrap">
             <div class="mailhook-header">
                 <h1>
-                    <span class="mailhook-logo">📬</span>
                     <?php _e( 'MailHook SMTP Settings', 'mailhook' ); ?>
                 </h1>
                 <p class="mailhook-tagline"><?php _e( 'Configure your SMTP server to send WordPress emails reliably.', 'mailhook' ); ?></p>
@@ -170,7 +169,7 @@ class MailHook_Settings {
             <?php if ( $saved ) : ?>
                 <div class="mailhook-notice-wrap">
                     <div class="notice notice-success is-dismissible mailhook-notice">
-                        <p><strong><?php _e( '✅ Settings saved successfully!', 'mailhook' ); ?></strong></p>
+                        <p><strong><?php _e( 'Settings saved successfully!', 'mailhook' ); ?></strong></p>
                     </div>
                 </div>
             <?php endif; ?>
@@ -182,7 +181,7 @@ class MailHook_Settings {
 
                     <!-- SMTP Server Section -->
                     <div class="mailhook-card">
-                        <h2 class="mailhook-card-title">🔧 <?php _e( 'SMTP Server Configuration', 'mailhook' ); ?></h2>
+                        <h2 class="mailhook-card-title"><?php _e( 'SMTP Server Configuration', 'mailhook' ); ?></h2>
 
                         <table class="form-table mailhook-table">
                             <tr>
@@ -218,7 +217,7 @@ class MailHook_Settings {
 
                     <!-- Authentication Section -->
                     <div class="mailhook-card">
-                        <h2 class="mailhook-card-title">🔐 <?php _e( 'Authentication', 'mailhook' ); ?></h2>
+                        <h2 class="mailhook-card-title"><?php _e( 'Authentication', 'mailhook' ); ?></h2>
 
                         <table class="form-table mailhook-table">
                             <tr>
@@ -261,7 +260,7 @@ class MailHook_Settings {
 
                     <!-- From Address Section -->
                     <div class="mailhook-card">
-                        <h2 class="mailhook-card-title">✉️ <?php _e( 'From Address', 'mailhook' ); ?></h2>
+                        <h2 class="mailhook-card-title"><?php _e( 'From Address', 'mailhook' ); ?></h2>
 
                         <table class="form-table mailhook-table">
                             <tr>
@@ -286,13 +285,13 @@ class MailHook_Settings {
 
                     <p class="submit">
                         <input type="submit" name="mailhook_save_settings" class="button button-primary button-hero"
-                               value="<?php _e( '💾 Save Settings', 'mailhook' ); ?>" />
+                               value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
                     </p>
                 </form>
 
                 <!-- Test Email Section -->
                 <div class="mailhook-card mailhook-test-card">
-                    <h2 class="mailhook-card-title">🧪 <?php _e( 'Send Test Email', 'mailhook' ); ?></h2>
+                    <h2 class="mailhook-card-title"><?php _e( 'Send Test Email', 'mailhook' ); ?></h2>
                     <p><?php _e( 'Send a test email to verify your SMTP configuration is working correctly.', 'mailhook' ); ?></p>
 
                     <div class="mailhook-test-form">
@@ -300,7 +299,7 @@ class MailHook_Settings {
                                value="<?php echo esc_attr( get_option( 'admin_email' ) ); ?>"
                                class="regular-text" placeholder="test@example.com" />
                         <button type="button" id="mailhook-send-test" class="button button-secondary">
-                            <?php _e( '🚀 Send Test Email', 'mailhook' ); ?>
+                            <?php _e( 'Send Test Email', 'mailhook' ); ?>
                         </button>
                     </div>
                     <div id="mailhook-test-result" class="mailhook-test-result" style="display:none;"></div>
@@ -326,15 +325,15 @@ class MailHook_Settings {
                 if (!email) {
                     result.style.display = 'block';
                     result.className = 'mailhook-test-result error';
-                    result.innerHTML = '❌ Please enter an email address.';
+                    result.innerHTML = 'Please enter an email address.';
                     return;
                 }
 
                 btn.disabled = true;
-                btn.textContent = '⏳ Sending...';
+                btn.textContent = 'Sending...';
                 result.style.display = 'block';
                 result.className = 'mailhook-test-result info';
-                result.innerHTML = '⏳ Sending test email...';
+                result.innerHTML = 'Sending test email...';
 
                 var formData = new FormData();
                 formData.append('action', 'mailhook_send_test');
@@ -350,19 +349,19 @@ class MailHook_Settings {
                 .then(function(data) {
                     if (data.success) {
                         result.className = 'mailhook-test-result success';
-                        result.innerHTML = '✅ ' + data.data;
+                        result.innerHTML = '' + data.data;
                     } else {
                         result.className = 'mailhook-test-result error';
-                        result.innerHTML = '❌ ' + data.data;
+                        result.innerHTML = '' + data.data;
                     }
                 })
                 .catch(function(err) {
                     result.className = 'mailhook-test-result error';
-                    result.innerHTML = '❌ Request failed: ' + err.message;
+                    result.innerHTML = 'Request failed: ' + err.message;
                 })
                 .finally(function() {
                     btn.disabled = false;
-                    btn.textContent = '🚀 Send Test Email';
+                    btn.textContent = 'Send Test Email';
                 });
             });
         })();

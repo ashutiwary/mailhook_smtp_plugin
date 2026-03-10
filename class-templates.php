@@ -26,7 +26,7 @@ class MailHook_Templates {
         add_submenu_page(
             'mailhook',
             __( 'Email Templates', 'mailhook' ),
-            __( '🎨 Templates', 'mailhook' ),
+            __( 'Templates', 'mailhook' ),
             'manage_options',
             'mailhook-templates',
             array( $this, 'render_page' )
@@ -165,9 +165,8 @@ class MailHook_Templates {
         $saved    = isset( $_GET['saved'] ) && $_GET['saved'] === '1';
         ?>
         <div class="wrap mailhook-wrap">
-            <div class="mailhook-header" style="background: linear-gradient(135deg, #10b981, #059669);">
+            <div class="mailhook-header" style="background: linear-gradient(135deg, #0129ac, #011e80);">
                 <h1>
-                    <span class="mailhook-logo">🎨</span>
                     <?php _e( 'Email Templates', 'mailhook' ); ?>
                 </h1>
                 <p class="mailhook-tagline"><?php _e( 'Wrap your unstyled WordPress emails in beautiful, responsive HTML templates.', 'mailhook' ); ?></p>
@@ -176,7 +175,7 @@ class MailHook_Templates {
             <?php if ( $saved ) : ?>
                 <div class="mailhook-notice-wrap">
                     <div class="notice notice-success is-dismissible mailhook-notice">
-                        <p><strong><?php _e( '✅ Template settings saved successfully!', 'mailhook' ); ?></strong></p>
+                        <p><strong><?php _e( 'Template settings saved successfully!', 'mailhook' ); ?></strong></p>
                     </div>
                 </div>
             <?php endif; ?>
@@ -300,7 +299,7 @@ class MailHook_Templates {
 
                     <p class="submit">
                         <input type="submit" name="mailhook_save_templates" class="button button-primary button-hero mh-green-btn"
-                               value="<?php _e( '💾 Save Templates', 'mailhook' ); ?>" />
+                               value="<?php _e( 'Save Templates', 'mailhook' ); ?>" />
                     </p>
                 </form>
             </div>

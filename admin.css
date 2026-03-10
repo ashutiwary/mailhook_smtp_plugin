@@ -4,7 +4,7 @@
 
 /* ──────────── Layout ──────────── */
 .mailhook-wrap {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 20px auto 40px;
 }
 
@@ -85,6 +85,10 @@
     padding: 8px 12px;
     font-size: 14px;
     transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mailhook-table select {
+    padding-right: 32px;
 }
 
 .mailhook-table input:focus,
@@ -397,6 +401,10 @@
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+.mailhook-filter-group select {
+    padding-right: 32px;
+}
+
 .mailhook-filter-group select:focus,
 .mailhook-filter-group input[type="text"]:focus {
     border-color: #0129ac;
@@ -536,15 +544,16 @@
 }
 
 .mh-col-to {
-    width: 25%;
+    width: 22%;
 }
 
 .mh-col-subject {
-    width: 25%;
+    width: 22%;
 }
 
 .mh-col-source {
-    width: 12%;
+    width: 18%;
+    white-space: nowrap;
 }
 
 .mh-col-date {
@@ -894,7 +903,7 @@
 }
 
 .mailhook-template-card.active {
-    border-color: #10b981;
+    border-color: #0129ac;
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
@@ -1042,12 +1051,12 @@
 }
 
 .mh-green-btn {
-    background: #10b981 !important;
-    border-color: #059669 !important;
-    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+    background: #0129ac !important;
+    border-color: #011e80 !important;
+    box-shadow: 0 4px 14px rgba(1, 41, 172, 0.35) !important;
 }
 
 .mh-green-btn:hover {
-    background: #059669 !important;
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45) !important;
+    background: #011e80 !important;
+    box-shadow: 0 6px 20px rgba(1, 41, 172, 0.45) !important;
 }
