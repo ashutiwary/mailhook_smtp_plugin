@@ -71,19 +71,22 @@ class MailHook_Templates {
             wp_die( __( 'Unauthorized access.', 'mailhook' ) );
         }
 
+        $allowed_layouts = array( 'none', 'modern', 'classic', 'custom' );
+        $layout_raw      = sanitize_key( wp_unslash( $_POST['layout'] ?? 'none' ) );
+
         $settings = array(
-            'layout'       => sanitize_key( $_POST['layout'] ?? 'none' ),
-            'primary_color'=> sanitize_hex_color( $_POST['primary_color'] ?? '#0129ac' ),
-            'header_text'  => sanitize_text_field( $_POST['header_text'] ?? '' ),
-            'footer_text'  => sanitize_text_field( $_POST['footer_text'] ?? '' ),
-            'custom_html'  => wp_kses_post( wp_unslash( $_POST['custom_html'] ?? '' ) ),
+            'layout'        => in_array( $layout_raw, $allowed_layouts, true ) ? $layout_raw : 'none',
+            'primary_color' => sanitize_hex_color( $_POST['primary_color'] ?? '#0129ac' ),
+            'header_text'   => sanitize_text_field( wp_unslash( $_POST['header_text'] ?? '' ) ),
+            'footer_text'   => sanitize_text_field( wp_unslash( $_POST['footer_text'] ?? '' ) ),
+            'custom_html'   => wp_kses_post( wp_unslash( $_POST['custom_html'] ?? '' ) ),
         );
 
         update_option( self::OPTION_KEY, $settings );
 
-        wp_redirect( add_query_arg( array(
-            'page'    => 'mailhook-templates',
-            'saved'   => '1',
+        wp_safe_redirect( add_query_arg( array(
+            'page'  => 'mailhook-templates',
+            'saved' => '1',
         ), admin_url( 'admin.php' ) ) );
         exit;
     }
@@ -305,43 +308,9 @@ class MailHook_Templates {
             </div>
             
             <div class="mailhook-footer">
-                <p><?php printf( __( 'MailHook v%s — Lightweight SMTP for WordPress', 'mailhook' ), MAILHOOK_VERSION ); ?></p>
+                <p><?php printf( esc_html__( 'MailHook v%s &mdash; Lightweight SMTP for WordPress', 'mailhook' ), esc_html( MAILHOOK_VERSION ) ); ?></p>
             </div>
         </div>
-
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var radios         = document.querySelectorAll('input[name="layout"]');
-            var optionsWrapper = document.getElementById('mh-options-wrapper');
-            var stdOptions     = document.getElementById('mh-standard-options');
-            var custOptions    = document.getElementById('mh-custom-options');
-
-            radios.forEach(function(radio) {
-                radio.addEventListener('change', function() {
-                    // Update active class on cards
-                    document.querySelectorAll('.mailhook-template-card').forEach(function(card) {
-                        card.classList.remove('active');
-                    });
-                    this.closest('.mailhook-template-card').classList.add('active');
-
-                    // Show/Hide sections
-                    var val = this.value;
-                    if (val === 'none') {
-                        optionsWrapper.style.display = 'none';
-                    } else {
-                        optionsWrapper.style.display = 'block';
-                        if (val === 'custom') {
-                            stdOptions.style.display = 'none';
-                            custOptions.style.display = 'block';
-                        } else {
-                            stdOptions.style.display = 'block';
-                            custOptions.style.display = 'none';
-                        }
-                    }
-                });
-            });
-        });
-        </script>
         <?php
     }
 }

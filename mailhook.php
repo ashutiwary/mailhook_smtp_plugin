@@ -17,22 +17,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'MAILHOOK_VERSION', '1.0.0' );
-define( 'MAILHOOK_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'MAILHOOK_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'MAILHOOK_VERSION',      '1.0.0' );
+define( 'MAILHOOK_PLUGIN_DIR',   plugin_dir_path( __FILE__ ) );
+define( 'MAILHOOK_PLUGIN_URL',   plugin_dir_url( __FILE__ ) );
 define( 'MAILHOOK_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
 
+// Folder shortcuts — use these in future features
+define( 'MAILHOOK_ADMIN_DIR',    MAILHOOK_PLUGIN_DIR . 'admin/' );
+define( 'MAILHOOK_ADMIN_URL',    MAILHOOK_PLUGIN_URL . 'admin/' );
+define( 'MAILHOOK_INCLUDES_DIR', MAILHOOK_PLUGIN_DIR . 'includes/' );
+
 // Include class files
-require_once MAILHOOK_PLUGIN_DIR . 'class-settings.php';
-require_once MAILHOOK_PLUGIN_DIR . 'class-templates.php';
-require_once MAILHOOK_PLUGIN_DIR . 'class-mailer.php';
-require_once MAILHOOK_PLUGIN_DIR . 'class-test-mail.php';
-require_once MAILHOOK_PLUGIN_DIR . 'class-logger.php';
+require_once MAILHOOK_INCLUDES_DIR . 'class-mailer.php';
+require_once MAILHOOK_ADMIN_DIR    . 'class-settings.php';
+require_once MAILHOOK_ADMIN_DIR    . 'class-templates.php';
+require_once MAILHOOK_ADMIN_DIR    . 'class-test-mail.php';
+require_once MAILHOOK_ADMIN_DIR    . 'class-logger.php';
 
 /**
  * Initialize the plugin on plugins_loaded.
  */
 function mailhook_init() {
+    // Load plugin text domain for translations
+    load_plugin_textdomain( 'mailhook', false, dirname( MAILHOOK_PLUGIN_BASENAME ) . '/languages' );
+
     // Initialize settings page (admin only)
     if ( is_admin() ) {
         new MailHook_Settings();
@@ -82,12 +90,22 @@ function mailhook_activate() {
 
     // Default template settings
     if ( ! get_option( 'mailhook_templates' ) ) {
-        require_once MAILHOOK_PLUGIN_DIR . 'class-templates.php';
+        require_once MAILHOOK_ADMIN_DIR . 'class-templates.php';
         update_option( 'mailhook_templates', MailHook_Templates::get_defaults() );
     }
 
     // Create the email logs database table
-    require_once MAILHOOK_PLUGIN_DIR . 'class-logger.php';
+    require_once MAILHOOK_ADMIN_DIR . 'class-logger.php';
     MailHook_Logger::install_table();
 }
 register_activation_hook( __FILE__, 'mailhook_activate' );
+
+/**
+ * Placeholder deactivation hook.
+ * Keeps the data intact on deactivation — full cleanup handled by uninstall.php.
+ */
+function mailhook_deactivate() {
+    // Intentionally left empty.
+    // Settings and logs are preserved on deactivate; uninstall.php handles cleanup.
+}
+register_deactivation_hook( __FILE__, 'mailhook_deactivate' );

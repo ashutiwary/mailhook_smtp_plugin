@@ -63,15 +63,42 @@ class MailHook_Settings {
      * Enqueue admin CSS only on our settings page.
      */
     public function enqueue_assets( $hook ) {
-        // Load CSS on both MailHook admin pages
+        // Load CSS and JS only on our admin pages
         if ( ! in_array( $hook, array( 'toplevel_page_mailhook', 'mailhook_page_mailhook-logs', 'mailhook_page_mailhook-templates' ), true ) ) {
             return;
         }
         wp_enqueue_style(
             'mailhook-admin',
-            MAILHOOK_PLUGIN_URL . 'admin.css',
+            MAILHOOK_ADMIN_URL . 'css/admin.css',
             array(),
             MAILHOOK_VERSION
+        );
+        wp_enqueue_script(
+            'mailhook-admin',
+            MAILHOOK_ADMIN_URL . 'js/admin.js',
+            array(),
+            MAILHOOK_VERSION,
+            true
+        );
+        wp_localize_script(
+            'mailhook-admin',
+            'mailhookData',
+            array(
+                'ajaxurl'         => admin_url( 'admin-ajax.php' ),
+                'testNonce'       => wp_create_nonce( 'mailhook_test' ),
+                'deleteNonce'     => wp_create_nonce( 'mailhook_delete_logs' ),
+                'viewNonce'       => wp_create_nonce( 'mailhook_view_log' ),
+                'confirmDelete'   => __( 'Delete selected logs?', 'mailhook' ),
+                'confirmDeleteAll'=> __( 'Delete ALL logs? This cannot be undone.', 'mailhook' ),
+                'sending'         => __( 'Sending…', 'mailhook' ),
+                'sendTest'        => __( 'Send Test Email', 'mailhook' ),
+                'enterEmail'      => __( 'Please enter an email address.', 'mailhook' ),
+                'sendingMsg'      => __( 'Sending test email…', 'mailhook' ),
+                'requestFailed'   => __( 'Request failed: ', 'mailhook' ),
+                'loading'         => __( 'Loading…', 'mailhook' ),
+                'error'           => __( 'Error', 'mailhook' ),
+                'logDeleted'      => __( 'Logs deleted.', 'mailhook' ),
+            )
         );
     }
 
@@ -94,17 +121,19 @@ class MailHook_Settings {
         }
 
         $settings = array(
-            'smtp_host'       => sanitize_text_field( $_POST['smtp_host'] ?? '' ),
-            'smtp_port'       => absint( $_POST['smtp_port'] ?? 587 ),
-            'smtp_encryption' => sanitize_text_field( $_POST['smtp_encryption'] ?? 'tls' ),
+            'smtp_host'       => sanitize_text_field( wp_unslash( $_POST['smtp_host'] ?? '' ) ),
+            'smtp_port'       => min( 65535, max( 1, absint( $_POST['smtp_port'] ?? 587 ) ) ),
+            'smtp_encryption' => in_array( $_POST['smtp_encryption'] ?? '', array( 'tls', 'ssl', 'none' ), true )
+                                    ? sanitize_text_field( $_POST['smtp_encryption'] )
+                                    : 'tls',
             'smtp_auth'       => sanitize_text_field( $_POST['smtp_auth'] ?? '0' ),
-            'smtp_username'   => sanitize_text_field( $_POST['smtp_username'] ?? '' ),
+            'smtp_username'   => sanitize_text_field( wp_unslash( $_POST['smtp_username'] ?? '' ) ),
             'from_email'      => sanitize_email( $_POST['from_email'] ?? '' ),
-            'from_name'       => sanitize_text_field( $_POST['from_name'] ?? '' ),
+            'from_name'       => sanitize_text_field( wp_unslash( $_POST['from_name'] ?? '' ) ),
         );
 
         // Encrypt password before saving
-        $password = $_POST['smtp_password'] ?? '';
+        $password = isset( $_POST['smtp_password'] ) ? $_POST['smtp_password'] : '';
         if ( ! empty( $password ) ) {
             $settings['smtp_password'] = $this->encrypt_password( $password );
         } else {
@@ -116,7 +145,7 @@ class MailHook_Settings {
         update_option( self::OPTION_KEY, $settings );
 
         // Redirect with success message
-        wp_redirect( add_query_arg( array(
+        wp_safe_redirect( add_query_arg( array(
             'page'    => 'mailhook',
             'saved'   => '1',
         ), admin_url( 'admin.php' ) ) );
@@ -306,66 +335,12 @@ class MailHook_Settings {
                 </div>
             </div>
 
+
             <!-- Footer -->
             <div class="mailhook-footer">
-                <p><?php printf( __( 'MailHook v%s — Lightweight SMTP for WordPress', 'mailhook' ), MAILHOOK_VERSION ); ?></p>
+                <p><?php printf( esc_html__( 'MailHook v%s &mdash; Lightweight SMTP for WordPress', 'mailhook' ), esc_html( MAILHOOK_VERSION ) ); ?></p>
             </div>
         </div>
-
-        <script>
-        (function() {
-            var btn     = document.getElementById('mailhook-send-test');
-            var input   = document.getElementById('mailhook-test-email');
-            var result  = document.getElementById('mailhook-test-result');
-
-            if (!btn) return;
-
-            btn.addEventListener('click', function() {
-                var email = input.value.trim();
-                if (!email) {
-                    result.style.display = 'block';
-                    result.className = 'mailhook-test-result error';
-                    result.innerHTML = 'Please enter an email address.';
-                    return;
-                }
-
-                btn.disabled = true;
-                btn.textContent = 'Sending...';
-                result.style.display = 'block';
-                result.className = 'mailhook-test-result info';
-                result.innerHTML = 'Sending test email...';
-
-                var formData = new FormData();
-                formData.append('action', 'mailhook_send_test');
-                formData.append('email', email);
-                formData.append('nonce', '<?php echo wp_create_nonce( "mailhook_test" ); ?>');
-
-                fetch(ajaxurl, {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'same-origin'
-                })
-                .then(function(response) { return response.json(); })
-                .then(function(data) {
-                    if (data.success) {
-                        result.className = 'mailhook-test-result success';
-                        result.innerHTML = '' + data.data;
-                    } else {
-                        result.className = 'mailhook-test-result error';
-                        result.innerHTML = '' + data.data;
-                    }
-                })
-                .catch(function(err) {
-                    result.className = 'mailhook-test-result error';
-                    result.innerHTML = 'Request failed: ' + err.message;
-                })
-                .finally(function() {
-                    btn.disabled = false;
-                    btn.textContent = 'Send Test Email';
-                });
-            });
-        })();
-        </script>
         <?php
     }
 }

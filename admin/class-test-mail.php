@@ -20,14 +20,13 @@ class MailHook_Test_Mail {
      * Handle the AJAX test email request.
      */
     public function send_test_email() {
-        // Verify nonce
-        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'mailhook_test' ) ) {
-            wp_send_json_error( __( 'Security check failed.', 'mailhook' ) );
-        }
+        // Verify nonce and bail early on failure (wp_die() is called internally)
+        check_ajax_referer( 'mailhook_test', 'nonce' );
 
         // Check permissions
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( __( 'Unauthorized.', 'mailhook' ) );
+            wp_die();
         }
 
         $to = sanitize_email( $_POST['email'] ?? '' );

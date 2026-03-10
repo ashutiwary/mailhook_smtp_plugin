@@ -230,6 +230,12 @@ class MailHook_Logger {
      * Render the Email Logs admin page.
      */
     public static function render_page() {
+        // Capability check — even though WP won't show the menu to non-admins,
+        // a direct URL could expose the page without this guard.
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( esc_html__( 'You do not have permission to access this page.', 'mailhook' ) );
+        }
+
         global $wpdb;
         $table = $wpdb->prefix . self::TABLE;
 
@@ -268,12 +274,14 @@ class MailHook_Logger {
         $all       = array_merge( $params, array( self::PER_PAGE, $offset ) );
         $logs      = $wpdb->get_results( $wpdb->prepare( $query, $all ) );
 
-        // Stats
+        // Stats (table name is internal/fixed — safe to use without prepare)
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
         $total_sent   = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status = 'sent'" );
+        // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
         $total_failed = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE status = 'failed'" );
         $last_24h     = (int) $wpdb->get_var( $wpdb->prepare(
-            "SELECT COUNT(*) FROM {$table} WHERE date_time >= %s",
-            gmdate( 'Y-m-d H:i:s', current_time( 'timestamp' ) - DAY_IN_SECONDS )
+            "SELECT COUNT(*) FROM {$table} WHERE date_time >= %s", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS )
         ) );
 
         $page_url = admin_url( 'admin.php?page=mailhook-logs' );
@@ -367,7 +375,13 @@ class MailHook_Logger {
                                 <?php _e( 'Delete All Logs', 'mailhook' ); ?>
                             </button>
                             <span class="mailhook-bulk-count">
-                                <?php printf( __( '%s emails', 'mailhook' ), '<strong>' . intval( $total_items ) . '</strong>' ); ?>
+                                <?php
+                                printf(
+                                    /* translators: %s: number of emails */
+                                    esc_html__( '%s emails', 'mailhook' ),
+                                    '<strong>' . intval( $total_items ) . '</strong>'
+                                );
+                                ?>
                             </span>
                         </div>
 
@@ -447,107 +461,10 @@ class MailHook_Logger {
                 </div>
             </div>
 
-            <!-- Footer -->
             <div class="mailhook-footer">
-                <p><?php printf( __( 'MailHook v%s — Lightweight SMTP for WordPress', 'mailhook' ), MAILHOOK_VERSION ); ?></p>
+                <p><?php printf( esc_html__( 'MailHook v%s &mdash; Lightweight SMTP for WordPress', 'mailhook' ), esc_html( MAILHOOK_VERSION ) ); ?></p>
             </div>
         </div>
-
-        <script>
-        (function(){
-            /* ── Select all / checkbox logic ── */
-            var selectAll = document.getElementById('mh-select-all');
-            var deleteBtn = document.getElementById('mh-delete-selected');
-            var checks    = document.querySelectorAll('.mh-log-check');
-
-            function updateDeleteBtn() {
-                if (!deleteBtn) return;
-                var any = false;
-                checks.forEach(function(c){ if(c.checked) any = true; });
-                deleteBtn.disabled = !any;
-            }
-
-            if (selectAll) {
-                selectAll.addEventListener('change', function(){
-                    checks.forEach(function(c){ c.checked = selectAll.checked; });
-                    updateDeleteBtn();
-                });
-            }
-            checks.forEach(function(c){
-                c.addEventListener('change', updateDeleteBtn);
-            });
-
-            /* ── Delete selected ── */
-            if (deleteBtn) {
-                deleteBtn.addEventListener('click', function(){
-                    if (!confirm('<?php echo esc_js( __( 'Delete selected logs?', 'mailhook' ) ); ?>')) return;
-                    var ids = [];
-                    checks.forEach(function(c){ if(c.checked) ids.push(c.value); });
-                    doDelete(ids);
-                });
-            }
-
-            /* ── Delete all ── */
-            var deleteAllBtn = document.getElementById('mh-delete-all');
-            if (deleteAllBtn) {
-                deleteAllBtn.addEventListener('click', function(){
-                    if (!confirm('<?php echo esc_js( __( 'Delete ALL logs? This cannot be undone.', 'mailhook' ) ); ?>')) return;
-                    doDelete(['all']);
-                });
-            }
-
-            function doDelete(ids) {
-                var fd = new FormData();
-                fd.append('action', 'mailhook_delete_logs');
-                fd.append('nonce', '<?php echo wp_create_nonce("mailhook_delete_logs"); ?>');
-                ids.forEach(function(id){ fd.append('ids[]', id); });
-
-                fetch(ajaxurl, { method:'POST', body:fd, credentials:'same-origin' })
-                .then(function(r){ return r.json(); })
-                .then(function(d){
-                    if (d.success) location.reload();
-                    else alert(d.data || 'Error');
-                });
-            }
-
-            /* ── View detail modal ── */
-            var modal   = document.getElementById('mailhook-log-modal');
-            var mBody   = document.getElementById('mailhook-modal-body');
-            var overlay = modal ? modal.querySelector('.mailhook-modal-overlay') : null;
-            var closeBtn= modal ? modal.querySelector('.mailhook-modal-close')  : null;
-
-            document.querySelectorAll('.mailhook-view-btn').forEach(function(btn){
-                btn.addEventListener('click', function(){
-                    var id = btn.getAttribute('data-id');
-                    modal.style.display = 'flex';
-                    mBody.innerHTML = '<div class="mailhook-modal-loading">Loading…</div>';
-
-                    var fd = new FormData();
-                    fd.append('action', 'mailhook_view_log');
-                    fd.append('nonce', '<?php echo wp_create_nonce("mailhook_view_log"); ?>');
-                    fd.append('id', id);
-
-                    fetch(ajaxurl, { method:'POST', body:fd, credentials:'same-origin' })
-                    .then(function(r){ return r.json(); })
-                    .then(function(d){
-                        if (d.success) {
-                            mBody.innerHTML = d.data;
-                        } else {
-                            mBody.innerHTML = '<p style="color:#991b1b;">' + (d.data||'Error') + '</p>';
-                        }
-                    })
-                    .catch(function(err){
-                        mBody.innerHTML = '<p style="color:#991b1b;">' + err.message + '</p>';
-                    });
-                });
-            });
-
-            function closeModal(){ if(modal) modal.style.display = 'none'; }
-            if (overlay)  overlay.addEventListener('click', closeModal);
-            if (closeBtn) closeBtn.addEventListener('click', closeModal);
-            document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeModal(); });
-        })();
-        </script>
         <?php
     }
 
@@ -631,19 +548,23 @@ class MailHook_Logger {
         check_ajax_referer( 'mailhook_delete_logs', 'nonce' );
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( __( 'Unauthorized.', 'mailhook' ) );
+            wp_die();
         }
 
         global $wpdb;
         $table = $wpdb->prefix . self::TABLE;
-        $ids   = $_POST['ids'] ?? array();
+
+        // Ensure ids is always an array
+        $ids = isset( $_POST['ids'] ) ? (array) $_POST['ids'] : array();
 
         if ( in_array( 'all', $ids, true ) ) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
             $wpdb->query( "TRUNCATE TABLE {$table}" );
         } else {
-            $ids = array_map( 'intval', $ids );
-            $ids = array_filter( $ids );
+            $ids = array_filter( array_map( 'intval', $ids ) );
             if ( ! empty( $ids ) ) {
                 $placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+                // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
                 $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE id IN ({$placeholders})", $ids ) );
             }
         }

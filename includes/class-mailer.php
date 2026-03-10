@@ -48,8 +48,13 @@ class MailHook_Mailer {
      */
     public function configure_smtp( $phpmailer ) {
         $phpmailer->isSMTP();
-        $phpmailer->Host       = $this->settings['smtp_host'];
-        $phpmailer->Port       = intval( $this->settings['smtp_port'] );
+        $phpmailer->Host = $this->settings['smtp_host'];
+
+        // Clamp port to valid range
+        $port = intval( $this->settings['smtp_port'] );
+        $phpmailer->Port = ( $port >= 1 && $port <= 65535 ) ? $port : 587;
+
+        // Validate encryption against allowlist before assigning
         $phpmailer->SMTPSecure = $this->get_encryption();
 
         // Authentication
@@ -122,13 +127,15 @@ class MailHook_Mailer {
      * @return string
      */
     private function get_encryption() {
+        $allowed    = array( 'tls', 'ssl', 'none' );
         $encryption = isset( $this->settings['smtp_encryption'] ) ? $this->settings['smtp_encryption'] : 'tls';
 
-        if ( $encryption === 'none' ) {
-            return '';
+        // Only allow known values; fall back to TLS for anything unexpected
+        if ( ! in_array( $encryption, $allowed, true ) ) {
+            $encryption = 'tls';
         }
 
-        return $encryption; // 'ssl' or 'tls'
+        return ( $encryption === 'none' ) ? '' : $encryption;
     }
 
     /**
@@ -170,8 +177,14 @@ class MailHook_Mailer {
             return '';
         }
 
-        $key    = $this->get_encryption_key();
-        $data   = base64_decode( $encrypted_password );
+        // Guard: OpenSSL extension must be available
+        if ( ! function_exists( 'openssl_decrypt' ) ) {
+            // Return as-is; cannot decrypt without OpenSSL
+            return $encrypted_password;
+        }
+
+        $key  = $this->get_encryption_key();
+        $data = base64_decode( $encrypted_password );
 
         if ( $data === false || strlen( $data ) < 17 ) {
             // Not encrypted or corrupted — return as-is (backward compat)
