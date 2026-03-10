@@ -39,7 +39,7 @@ class MailHook_Templates {
     public static function get_defaults() {
         return array(
             'layout'       => 'none', // none, modern, classic, custom
-            'primary_color'=> '#6366f1',
+            'primary_color'=> '#0129ac',
             'header_text'  => get_bloginfo( 'name' ),
             'footer_text'  => sprintf( __( 'Sent from %s', 'mailhook' ), get_bloginfo( 'name' ) ),
             'custom_html'  => '{email_content}',
@@ -73,7 +73,7 @@ class MailHook_Templates {
 
         $settings = array(
             'layout'       => sanitize_key( $_POST['layout'] ?? 'none' ),
-            'primary_color'=> sanitize_hex_color( $_POST['primary_color'] ?? '#6366f1' ),
+            'primary_color'=> sanitize_hex_color( $_POST['primary_color'] ?? '#0129ac' ),
             'header_text'  => sanitize_text_field( $_POST['header_text'] ?? '' ),
             'footer_text'  => sanitize_text_field( $_POST['footer_text'] ?? '' ),
             'custom_html'  => wp_kses_post( wp_unslash( $_POST['custom_html'] ?? '' ) ),

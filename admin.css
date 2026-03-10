@@ -10,12 +10,12 @@
 
 /* ──────────── Header ──────────── */
 .mailhook-header {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, #0129ac, #011e80);
     color: #fff;
     padding: 28px 32px;
     border-radius: 12px;
     margin-bottom: 24px;
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 20px rgba(1, 41, 172, 0.3);
 }
 
 .mailhook-header h1 {
@@ -33,7 +33,7 @@
 }
 
 .mailhook-tagline {
-    color: #e0e7ff;
+    color: #e1ecff;
     margin: 6px 0 0;
     font-size: 14px;
 }
@@ -89,8 +89,8 @@
 
 .mailhook-table input:focus,
 .mailhook-table select:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    border-color: #0129ac;
+    box-shadow: 0 0 0 3px rgba(1, 41, 172, 0.15);
     outline: none;
 }
 
@@ -137,7 +137,7 @@
 }
 
 .mailhook-toggle input:checked+.mailhook-toggle-slider {
-    background: #6366f1;
+    background: #0129ac;
 }
 
 .mailhook-toggle input:checked+.mailhook-toggle-slider::after {
@@ -151,12 +151,12 @@
 
 /* ──────────── Test Email ──────────── */
 .mailhook-test-card {
-    border: 2px dashed #c7d2fe;
-    background: #f5f3ff;
+    border: 2px dashed #b1cffe;
+    background: #f3f7ff;
 }
 
 .mailhook-test-card:hover {
-    border-color: #a5b4fc;
+    border-color: #90b0ff;
 }
 
 .mailhook-test-form {
@@ -175,8 +175,8 @@
 }
 
 .mailhook-test-form input[type="email"]:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    border-color: #0129ac;
+    box-shadow: 0 0 0 3px rgba(1, 41, 172, 0.15);
     outline: none;
 }
 
@@ -209,9 +209,9 @@
 }
 
 .mailhook-test-result.info {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    color: #1e40af;
+    background: #e1ecff;
+    border: 1px solid #b1cffe;
+    color: #0129ac;
 }
 
 /* ──────────── Notice ──────────── */
@@ -234,19 +234,19 @@
 
 /* ──────────── Submit Button ──────────── */
 .mailhook-form .button-hero {
-    background: #6366f1 !important;
-    border-color: #4f46e5 !important;
+    background: #0129ac !important;
+    border-color: #011e80 !important;
     color: #fff !important;
     font-size: 15px;
     padding: 12px 32px !important;
     border-radius: 10px !important;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(1, 41, 172, 0.35) !important;
     transition: all 0.2s ease;
 }
 
 .mailhook-form .button-hero:hover {
-    background: #4f46e5 !important;
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.45) !important;
+    background: #011e80 !important;
+    box-shadow: 0 6px 20px rgba(1, 41, 172, 0.45) !important;
     transform: translateY(-1px);
 }
 
@@ -324,7 +324,7 @@
 }
 
 .mailhook-stat-total {
-    border-left-color: #6366f1;
+    border-left-color: #0129ac;
 }
 
 .mailhook-stat-sent {
@@ -399,8 +399,8 @@
 
 .mailhook-filter-group select:focus,
 .mailhook-filter-group input[type="text"]:focus {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    border-color: #0129ac;
+    box-shadow: 0 0 0 3px rgba(1, 41, 172, 0.15);
     outline: none;
 }
 
@@ -668,13 +668,13 @@
 
 .mailhook-page-btn:hover {
     background: #f1f5f9;
-    border-color: #6366f1;
-    color: #6366f1;
+    border-color: #0129ac;
+    color: #0129ac;
 }
 
 .mailhook-page-btn.active {
-    background: #6366f1;
-    border-color: #6366f1;
+    background: #0129ac;
+    border-color: #0129ac;
     color: #fff;
     font-weight: 600;
 }
@@ -974,7 +974,7 @@
 }
 
 .mh-preview-modern-header {
-    background: #6366f1;
+    background: #0129ac;
     height: 24px;
     width: 120px;
     position: absolute;
@@ -1004,7 +1004,7 @@
 }
 
 .mh-preview-classic-header {
-    border-bottom: 2px solid #6366f1;
+    border-bottom: 2px solid #0129ac;
     padding-bottom: 8px;
     margin-bottom: 12px;
 }
