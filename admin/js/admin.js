@@ -175,6 +175,56 @@
         if (e.key === 'Escape') { closeModal(); }
     });
 
+    /* ── Toast helper ── */
+    function showToast(message, type) {
+        var toast = document.createElement('div');
+        toast.className = 'mh-toast mh-toast-' + (type || 'info');
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        // Animate in
+        requestAnimationFrame(function () { toast.classList.add('mh-toast-visible'); });
+        // Auto-remove after 3.5 s
+        setTimeout(function () {
+            toast.classList.remove('mh-toast-visible');
+            setTimeout(function () { toast.parentNode && toast.parentNode.removeChild(toast); }, 400);
+        }, 3500);
+    }
+
+    /* ── Resend failed email ── */
+    document.querySelectorAll('.mailhook-resend-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var id    = btn.getAttribute('data-id');
+            var nonce = btn.getAttribute('data-nonce');
+
+            btn.disabled    = true;
+            btn.textContent = 'Sending\u2026';
+
+            var fd = new FormData();
+            fd.append('action', 'mailhook_resend_email');
+            fd.append('nonce',  nonce);
+            fd.append('id',     id);
+
+            fetch(data.ajaxurl, { method: 'POST', body: fd, credentials: 'same-origin' })
+                .then(function (r) { return r.json(); })
+                .then(function (res) {
+                    if (res.success) {
+                        showToast(res.data.message || 'Email resent successfully!', 'success');
+                        // Reload after short delay so the new log entry is visible
+                        setTimeout(function () { window.location.reload(); }, 1800);
+                    } else {
+                        showToast(res.data || 'Failed to resend.', 'error');
+                        btn.disabled    = false;
+                        btn.textContent = 'Resend';
+                    }
+                })
+                .catch(function (err) {
+                    showToast('Request error: ' + err.message, 'error');
+                    btn.disabled    = false;
+                    btn.textContent = 'Resend';
+                });
+        });
+    });
+
     /* =========================================================
        3. TEMPLATES PAGE — Layout switcher
     ========================================================= */

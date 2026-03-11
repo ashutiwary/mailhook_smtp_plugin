@@ -47,6 +47,7 @@ class MailHook_Logger {
         // AJAX handlers
         add_action( 'wp_ajax_mailhook_view_log',    array( $this, 'ajax_view_log' ) );
         add_action( 'wp_ajax_mailhook_delete_logs',  array( $this, 'ajax_delete_logs' ) );
+        add_action( 'wp_ajax_mailhook_resend_email', array( $this, 'ajax_resend_email' ) );
     }
 
     /* ───────────────────── Table Installation ──────────────────── */
@@ -416,6 +417,15 @@ class MailHook_Logger {
                                             <button type="button" class="button button-small mailhook-view-btn" data-id="<?php echo intval( $log->id ); ?>">
                                                 <?php _e( 'View', 'mailhook' ); ?>
                                             </button>
+                                            <?php if ( $log->status === 'failed' ) : ?>
+                                            <button type="button"
+                                                class="button button-small mailhook-resend-btn"
+                                                data-id="<?php echo intval( $log->id ); ?>"
+                                                data-nonce="<?php echo esc_attr( wp_create_nonce( 'mailhook_resend_' . $log->id ) ); ?>"
+                                                title="<?php esc_attr_e( 'Resend this failed email', 'mailhook' ); ?>">
+                                                <?php _e( 'Resend', 'mailhook' ); ?>
+                                            </button>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                     <?php if ( $log->status === 'failed' && ! empty( $log->error ) ) : ?>
@@ -570,5 +580,64 @@ class MailHook_Logger {
         }
 
         wp_send_json_success( __( 'Logs deleted.', 'mailhook' ) );
+    }
+
+    /**
+     * Resend a previously failed email.
+     *
+     * Looks up the log row by ID, verifies a per-row nonce,
+     * then calls wp_mail() with the stored email data.
+     */
+    public function ajax_resend_email() {
+        $id = intval( $_POST['id'] ?? 0 );
+        check_ajax_referer( 'mailhook_resend_' . $id, 'nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( __( 'Unauthorized.', 'mailhook' ) );
+        }
+
+        global $wpdb;
+        $table = $wpdb->prefix . self::TABLE;
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $log = $wpdb->get_row( $wpdb->prepare(
+            "SELECT * FROM {$table} WHERE id = %d",
+            $id
+        ) );
+
+        if ( ! $log ) {
+            wp_send_json_error( __( 'Log entry not found.', 'mailhook' ) );
+        }
+
+        if ( $log->status !== 'failed' ) {
+            wp_send_json_error( __( 'This email was not failed — no resend needed.', 'mailhook' ) );
+        }
+
+        // Build headers array from stored headers string
+        $headers = ! empty( $log->headers )
+            ? explode( "\r\n", $log->headers )
+            : array();
+
+        // Build attachments array (stored as comma-separated paths)
+        $attachments = ! empty( $log->attachments )
+            ? array_filter( array_map( 'trim', explode( ',', $log->attachments ) ) )
+            : array();
+
+        // Attempt resend
+        $result = wp_mail(
+            $log->to_email,
+            $log->subject,
+            $log->message,
+            $headers,
+            $attachments
+        );
+
+        if ( $result ) {
+            wp_send_json_success( array(
+                'message' => __( 'Email resent successfully!', 'mailhook' ),
+            ) );
+        } else {
+            wp_send_json_error( __( 'Failed to resend the email. Please check your SMTP settings.', 'mailhook' ) );
+        }
     }
 }

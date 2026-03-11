@@ -1061,9 +1061,54 @@
     box-shadow: 0 6px 20px rgba(1, 41, 172, 0.45) !important;
 }
 
-/* ════════════════════════════════════════════════════════
-   EMAIL REPORTS PAGE STYLES  (v2 — WP Mail SMTP inspired)
-   ════════════════════════════════════════════════════════ */
+/* ── Resend button (Email Logs — failed rows only) ── */
+.mailhook-resend-btn {
+    background: #b45309 !important;
+    border-color: #92400e !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    margin-left: 4px !important;
+    font-size: 12px !important;
+    transition: background 0.2s !important;
+}
+
+.mailhook-resend-btn:hover:not(:disabled) {
+    background: #92400e !important;
+}
+
+.mailhook-resend-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* ── Toast notification ── */
+.mh-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    max-width: 340px;
+}
+
+.mh-toast-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.mh-toast-success { background: #059669; }
+.mh-toast-error   { background: #dc2626; }
+.mh-toast-info    { background: #0129ac; }
+
 
 /* ── Main report card ── */
 .mh-report-main-card {
