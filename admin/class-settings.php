@@ -57,14 +57,16 @@ class MailHook_Settings {
             'mailhook-logs',
             array( 'MailHook_Logger', 'render_page' )
         );
+        // Note: Email Reports submenu is registered by MailHook_Email_Report class.
     }
+
 
     /**
      * Enqueue admin CSS only on our settings page.
      */
     public function enqueue_assets( $hook ) {
         // Load CSS and JS only on our admin pages
-        if ( ! in_array( $hook, array( 'toplevel_page_mailhook', 'mailhook_page_mailhook-logs', 'mailhook_page_mailhook-templates' ), true ) ) {
+        if ( ! in_array( $hook, array( 'toplevel_page_mailhook', 'mailhook_page_mailhook-logs', 'mailhook_page_mailhook-templates', 'mailhook_page_mailhook-email-report' ), true ) ) {
             return;
         }
         wp_enqueue_style(

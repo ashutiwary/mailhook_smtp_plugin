@@ -1060,3 +1060,593 @@
     background: #011e80 !important;
     box-shadow: 0 6px 20px rgba(1, 41, 172, 0.45) !important;
 }
+
+/* ════════════════════════════════════════════════════════
+   EMAIL REPORTS PAGE STYLES  (v2 — WP Mail SMTP inspired)
+   ════════════════════════════════════════════════════════ */
+
+/* ── Main report card ── */
+.mh-report-main-card {
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+/* ── Card header: title + inline legend row ── */
+.mh-report-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.mh-report-chart-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+/* ── Inline legend pills ── */
+.mh-legend-stats {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.mh-leg {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #475569;
+    white-space: nowrap;
+}
+
+.mh-leg strong {
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.mh-leg-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.mh-dot-total  { background: #6366f1; }
+.mh-dot-sent   { background: #22c55e; }
+.mh-dot-failed { background: #ef4444; }
+.mh-dot-rate   { background: #f59e0b; }
+
+/* ── Delivery rate badge colors ── */
+.mh-rate-good { color: #059669 !important; }
+.mh-rate-warn { color: #d97706 !important; }
+.mh-rate-bad  { color: #dc2626 !important; }
+
+/* ── Chart canvas wrapper ── */
+.mailhook-chart-wrapper {
+    position: relative;
+    padding: 16px 20px 8px;
+    height: 260px;
+}
+
+.mh-chart-empty {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Filter bar ── */
+.mh-report-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px 20px;
+    background: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.mh-filter-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.mh-filter-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Range dropdown */
+.mh-range-select {
+    height: 34px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 0 32px 0 12px;
+    font-size: 13px;
+    color: #374151;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: auto;
+    vertical-align: middle;
+}
+
+.mh-range-select:focus {
+    border-color: #0129ac;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(1,41,172,0.12);
+}
+
+/* Filter button */
+.mh-filter-btn {
+    height: 34px !important;
+    background: #0129ac !important;
+    border-color: #011e80 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    padding: 0 16px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer;
+    line-height: 32px !important;
+    vertical-align: middle;
+    transition: background 0.2s !important;
+}
+
+.mh-filter-btn:hover {
+    background: #011e80 !important;
+}
+
+/* Back button */
+.mh-back-btn {
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    color: #0129ac !important;
+    border-color: #b1cffe !important;
+    background: #f0f4ff !important;
+}
+
+.mh-back-btn:hover {
+    background: #e0eaff !important;
+}
+
+/* Custom date range panel */
+.mh-custom-range {
+    display: none;
+    align-items: center;
+    gap: 6px;
+}
+
+.mh-custom-range.visible {
+    display: flex;
+}
+
+.mh-custom-range input[type="date"] {
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: #1e293b;
+    background: #fff;
+}
+
+.mh-custom-range input[type="date"]:focus {
+    border-color: #0129ac;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(1,41,172,0.12);
+}
+
+.mh-to-label {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* Search input */
+.mh-search-input {
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 8px !important;
+    padding: 7px 14px !important;
+    font-size: 13px !important;
+    color: #374151 !important;
+    width: 220px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mh-search-input:focus {
+    border-color: #0129ac !important;
+    box-shadow: 0 0 0 3px rgba(1,41,172,0.12) !important;
+    outline: none !important;
+}
+
+/* ── All Emails Table ── */
+.mh-all-emails-wrap {
+    overflow-x: auto;
+    padding: 0 0 4px;
+}
+
+.mh-emails-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.mh-emails-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-top: 1px solid #e2e8f0;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mh-emails-table tbody tr {
+    transition: background 0.14s;
+}
+
+.mh-emails-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.mh-emails-table tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.mh-th-subject { width: 36%; }
+.mh-th-source  { width: 20%; }
+.mh-th-num     { text-align: center; white-space: nowrap; width: 100px; }
+.mh-th-graph   { text-align: center; width: 60px; }
+
+.mh-td-subject {
+    color: #1e293b;
+    font-weight: 500;
+    word-break: break-word;
+}
+
+.mh-td-source { max-width: 180px; }
+
+/* percentage hint */
+.mh-pct {
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 400;
+    margin-left: 2px;
+}
+
+/* colour classes */
+.mh-sent-num   { color: #059669; font-weight: 500; }
+.mh-failed-num { color: #dc2626; font-weight: 500; }
+
+/* Graph icon button */
+.mh-graph-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 5px 7px;
+    cursor: pointer;
+    color: #64748b;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.mh-graph-btn:hover {
+    background: #e0eaff;
+    border-color: #b1cffe;
+    color: #0129ac;
+}
+
+/* ── Report Tables (shared — Source Breakdown etc.) ── */
+.mailhook-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-top: 14px;
+}
+
+.mailhook-report-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mailhook-report-table tbody tr { transition: background 0.15s; }
+.mailhook-report-table tbody tr:hover { background: #f8fafc; }
+
+.mailhook-report-table tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.mh-col-bar {
+    width: 180px;
+    white-space: nowrap;
+}
+
+.mh-bar-track {
+    display: inline-block;
+    width: 90px;
+    height: 7px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    vertical-align: middle;
+    overflow: hidden;
+    margin-right: 6px;
+}
+
+.mh-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0129ac, #4f6ef7);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    min-width: 2px;
+}
+
+.mh-bar-pct {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+    vertical-align: middle;
+}
+
+/* Card header row (title + description inline) */
+.mh-card-header-row {
+    margin-bottom: 4px;
+}
+
+.mh-card-header-row .mailhook-card-title {
+    margin-bottom: 4px;
+}
+
+/* No data text */
+.mailhook-no-data {
+    color: #94a3b8;
+    font-size: 14px;
+    padding: 20px 0 8px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .mh-report-card-header { flex-direction: column; align-items: flex-start; }
+    .mh-legend-stats { gap: 12px; }
+}
+
+@media (max-width: 782px) {
+    .mh-report-filter-bar { flex-direction: column; align-items: flex-start; }
+    .mh-search-input { width: 100% !important; }
+    .mh-th-source, .mh-td-source { display: none; }
+    .mh-col-bar { display: none; }
+}
+
+@media (max-width: 600px) {
+    .mailhook-stats-row { grid-template-columns: 1fr 1fr; }
+    .mh-legend-stats { display: none; }
+}
+
+
+/* ── Date Range Tabs ── */
+.mailhook-report-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.mailhook-range-btn {
+    background: #fff;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.18s;
+    line-height: 1.4;
+}
+
+.mailhook-range-btn:hover {
+    border-color: #0129ac;
+    color: #0129ac;
+    background: #f0f4ff;
+}
+
+.mailhook-range-btn.active {
+    background: #0129ac;
+    border-color: #0129ac;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(1,41,172,0.25);
+}
+
+/* ── Custom Date Range Panel ── */
+.mh-custom-range {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-left: 6px;
+}
+
+.mh-custom-range.visible {
+    display: flex;
+}
+
+.mh-custom-range label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.mh-custom-range input[type="date"] {
+    border: 1.5px solid #d1d5db;
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: #1e293b;
+}
+
+.mh-custom-range input[type="date"]:focus {
+    border-color: #0129ac;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(1,41,172,0.12);
+}
+
+/* ── Chart ── */
+.mailhook-report-chart-card {
+    min-height: 220px;
+}
+
+/* ── Delivery Rate badge colors ── */
+.mh-rate-good  { color: #059669; }
+.mh-rate-warn  { color: #d97706; }
+.mh-rate-bad   { color: #dc2626; }
+
+/* ── Report Tables (Source / Subject) ── */
+.mailhook-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin-top: 14px;
+}
+
+.mailhook-report-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 14px;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mailhook-report-table tbody tr {
+    transition: background 0.15s;
+}
+
+.mailhook-report-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.mailhook-report-table tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+.mh-source-name {
+    max-width: 280px;
+    word-break: break-word;
+}
+
+.mh-col-num {
+    text-align: right;
+    white-space: nowrap;
+    width: 80px;
+}
+
+.mh-sent-num   { color: #059669; font-weight: 500; }
+.mh-failed-num { color: #dc2626; font-weight: 500; }
+
+/* ── Progress Bar (Source share) ── */
+.mh-col-bar {
+    width: 160px;
+    white-space: nowrap;
+}
+
+.mh-bar-track {
+    display: inline-block;
+    width: 90px;
+    height: 7px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    vertical-align: middle;
+    overflow: hidden;
+    margin-right: 6px;
+}
+
+.mh-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0129ac, #3b62f5);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    min-width: 2px;
+}
+
+.mh-bar-pct {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+    vertical-align: middle;
+}
+
+/* ── No data text ── */
+.mailhook-no-data {
+    color: #94a3b8;
+    font-size: 14px;
+    padding: 20px 0 8px;
+}
+
+/* ── Responsive adjustments ── */
+@media (max-width: 900px) {
+    .mailhook-report-tabs {
+        gap: 6px;
+    }
+
+    .mh-col-bar {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .mailhook-stats-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mailhook-report-table thead th:nth-child(n+3),
+    .mailhook-report-table tbody td:nth-child(n+3) {
+        display: none;
+    }
+}
