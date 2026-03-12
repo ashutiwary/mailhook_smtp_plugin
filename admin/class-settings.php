@@ -157,6 +157,54 @@ class MailHook_Settings {
         }
         $settings['alert_emails'] = array_slice( $alert_emails, 0, 3 ); // Max 3 emails
 
+        // Backup Connection & Additional Connections
+        $settings['backup_enabled'] = sanitize_text_field( $_POST['backup_enabled'] ?? '0' );
+        $settings['backup_connection_id'] = sanitize_text_field( $_POST['backup_connection_id'] ?? 'none' );
+        
+        $additional = array();
+        if ( isset( $_POST['additional_connections'] ) && is_array( $_POST['additional_connections'] ) ) {
+            $existing_settings = get_option( self::OPTION_KEY, array() );
+            $existing_add = isset($existing_settings['additional_connections']) && is_array($existing_settings['additional_connections']) 
+                            ? $existing_settings['additional_connections'] 
+                            : array();
+                            
+            foreach ( $_POST['additional_connections'] as $idx => $conn ) {
+                $id = sanitize_text_field( $conn['id'] ?? '' );
+                if ( empty( $id ) ) continue;
+
+                $sanitized = array(
+                    'id'              => $id,
+                    'name'            => sanitize_text_field( wp_unslash( $conn['name'] ?? 'New Connection' ) ),
+                    'smtp_host'       => sanitize_text_field( wp_unslash( $conn['smtp_host'] ?? '' ) ),
+                    'smtp_port'       => min( 65535, max( 1, absint( $conn['smtp_port'] ?? 587 ) ) ),
+                    'smtp_encryption' => in_array( $conn['smtp_encryption'] ?? '', array( 'tls', 'ssl', 'none' ), true ) ? sanitize_text_field( $conn['smtp_encryption'] ) : 'tls',
+                    'smtp_auth'       => sanitize_text_field( $conn['smtp_auth'] ?? '0' ),
+                    'smtp_username'   => sanitize_text_field( wp_unslash( $conn['smtp_username'] ?? '' ) ),
+                    'from_email'      => sanitize_email( $conn['from_email'] ?? '' ),
+                    'from_name'       => sanitize_text_field( wp_unslash( $conn['from_name'] ?? '' ) )
+                );
+
+                // Handle password for this connection
+                $pass = $conn['smtp_password'] ?? '';
+                if ( ! empty( $pass ) && $pass !== '********' ) {
+                    $sanitized['smtp_password'] = $this->encrypt_password( $pass );
+                } else {
+                    // Try to find existing password
+                    $existing_pass = '';
+                    foreach($existing_add as $ex_conn) {
+                        if ($ex_conn['id'] === $id) {
+                            $existing_pass = $ex_conn['smtp_password'] ?? '';
+                            break;
+                        }
+                    }
+                    $sanitized['smtp_password'] = $existing_pass;
+                }
+
+                $additional[] = $sanitized;
+            }
+        }
+        $settings['additional_connections'] = $additional;
+
         update_option( self::OPTION_KEY, $settings );
 
         $redirect_args = array(
@@ -231,6 +279,7 @@ class MailHook_Settings {
                     <nav class="nav-tab-wrapper mailhook-nav-tabs">
                         <a href="#tab-general" class="nav-tab nav-tab-active" data-tab="general"><?php _e( 'General', 'mailhook' ); ?></a>
                         <a href="#tab-alerts" class="nav-tab" data-tab="alerts"><?php _e( 'Alerts', 'mailhook' ); ?></a>
+                        <a href="#tab-additional" class="nav-tab" data-tab="additional"><?php _e( 'Additional Connections', 'mailhook' ); ?></a>
                     </nav>
                 </div>
 
@@ -271,7 +320,7 @@ class MailHook_Settings {
                             <tr>
                                 <th><label for="smtp_encryption"><?php _e( 'Encryption', 'mailhook' ); ?></label></th>
                                 <td>
-                                    <select id="smtp_encryption" name="smtp_encryption">
+                                    <select id="smtp_encryption" name="smtp_encryption" style="margin-top: 5px;">
                                         <option value="tls" <?php selected( $settings['smtp_encryption'], 'tls' ); ?>><?php _e( 'TLS (Recommended)', 'mailhook' ); ?></option>
                                         <option value="ssl" <?php selected( $settings['smtp_encryption'], 'ssl' ); ?>><?php _e( 'SSL', 'mailhook' ); ?></option>
                                         <option value="none" <?php selected( $settings['smtp_encryption'], 'none' ); ?>><?php _e( 'None', 'mailhook' ); ?></option>
@@ -418,6 +467,76 @@ class MailHook_Settings {
 
                     </div><!-- /#tab-alerts -->
 
+                    <!-- Tab: Additional Connections -->
+                    <div id="tab-additional" class="mailhook-tab-content" style="display:none;">
+                        
+                        <div class="mailhook-card">
+                            <h2 class="mailhook-card-title"><?php _e( 'Backup Connection', 'mailhook' ); ?></h2>
+                            <p class="description"><?php _e( 'Select an additional connection to use as a fallback if your Primary Connection fails.', 'mailhook' ); ?></p>
+                            
+                            <table class="form-table mailhook-table">
+                                <tr>
+                                    <th style="vertical-align: middle;"><label><?php _e( 'Backup Connection', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 20px; min-height: 40px;">
+                                            <label class="mailhook-toggle" style="margin: 0; line-height: 1;">
+                                                <input type="hidden" name="backup_enabled" value="0" />
+                                                <input type="checkbox" id="backup_enabled" name="backup_enabled" value="1"
+                                                    <?php checked( isset($settings['backup_enabled']) ? $settings['backup_enabled'] : '0', '1' ); ?> />
+                                                <span class="mailhook-toggle-slider"></span>
+                                                <span class="mailhook-toggle-label" style="margin: 0; line-height: 1;"><?php _e( 'Enable backup connection', 'mailhook' ); ?></span>
+                                            </label>
+                                            
+                                            <div id="backup-connection-selector-wrap" style="margin: 0; <?php echo (isset($settings['backup_enabled']) && $settings['backup_enabled'] === '1') ? 'display: flex; align-items: center;' : 'display:none;'; ?>">
+                                                <select name="backup_connection_id" id="backup_connection_id" style="min-width: 250px; margin: 0; height: 32px; line-height: 1;">
+                                                    <option value="none" <?php selected( isset($settings['backup_connection_id']) ? $settings['backup_connection_id'] : 'none', 'none' ); ?>><?php _e( 'Select Connection', 'mailhook' ); ?></option>
+                                                    <?php 
+                                                    if ( ! empty( $settings['additional_connections'] ) && is_array( $settings['additional_connections'] ) ) {
+                                                        foreach ( $settings['additional_connections'] as $conn ) {
+                                                            $conn_id = esc_attr( $conn['id'] );
+                                                            $conn_name = esc_html( $conn['name'] );
+                                                            echo '<option value="' . $conn_id . '" ' . selected( isset($settings['backup_connection_id']) ? $settings['backup_connection_id'] : 'none', $conn_id, false ) . '>' . $conn_name . '</option>';
+                                                        }
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="mailhook-card">
+                            <h2 class="mailhook-card-title" style="display: flex; justify-content: space-between; align-items: center;">
+                                <?php _e( 'Additional Connections', 'mailhook' ); ?>
+                                <button type="button" class="button" id="mailhook-add-connection-btn"><?php _e( 'Add New Connection', 'mailhook' ); ?></button>
+                            </h2>
+                            <p class="description"><?php _e( 'Create secondary email connections that can be used for backup routing.', 'mailhook' ); ?></p>
+                            
+                            <div id="mailhook-connections-container">
+                                <?php 
+                                $connections = isset( $settings['additional_connections'] ) && is_array( $settings['additional_connections'] ) ? $settings['additional_connections'] : array();
+                                
+                                if ( empty( $connections ) ) {
+                                    echo '<p class="mailhook-no-connections description">' . __( 'No additional connections configured yet.', 'mailhook' ) . '</p>';
+                                } else {
+                                    foreach ( $connections as $index => $conn ) {
+                                        $this->render_connection_row( $conn, $index );
+                                    }
+                                }
+                                ?>
+                            </div>
+
+                        </div>
+
+                        <p class="submit" style="display: flex; gap: 10px; align-items: center;">
+                            <input type="submit" name="mailhook_save_settings" class="button button-primary button-hero"
+                                   value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
+                        </p>
+
+                    </div><!-- /#tab-additional -->
+
                 </form>
 
                 <!-- Test Email Section (General Tab Only) -->
@@ -443,6 +562,121 @@ class MailHook_Settings {
                 <p><?php printf( esc_html__( 'MailHook v%s &mdash; Lightweight SMTP for WordPress', 'mailhook' ), esc_html( MAILHOOK_VERSION ) ); ?></p>
             </div>
         </div>
+        <?php
+    }
+
+    /**
+     * Render the HTML for a single additional connection row.
+     *
+     * @param array $conn  The connection data.
+     * @param int   $index The index of the connection in the array.
+     */
+    public function render_connection_row( $conn = array(), $index = 0 ) {
+        $defaults = array(
+            'id'              => uniqid( 'mh_conn_' ),
+            'name'            => __( 'New Connection', 'mailhook' ),
+            'smtp_host'       => '',
+            'smtp_port'       => '587',
+            'smtp_encryption' => 'tls',
+            'smtp_auth'       => '1',
+            'smtp_username'   => '',
+            'smtp_password'   => '',
+            'from_email'      => '',
+            'from_name'       => '',
+        );
+        $conn = wp_parse_args( $conn, $defaults );
+        $has_password = ! empty( $conn['smtp_password'] );
+        $base_name = "additional_connections[{$index}]";
+        ?>
+        <div class="mailhook-connection-row" data-index="<?php echo esc_attr( $index ); ?>" data-id="<?php echo esc_attr( $conn['id'] ); ?>">
+            <div class="mailhook-connection-header">
+                <div class="mailhook-connection-header-left">
+                    <span class="mailhook-connection-toggle-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </span>
+                    <h3 class="mailhook-connection-title"><?php echo esc_html( $conn['name'] ); ?></h3>
+                </div>
+                <div class="mailhook-connection-header-actions">
+                    <button type="button" class="mailhook-remove-connection-btn" title="<?php esc_attr_e( 'Remove Connection', 'mailhook' ); ?>">
+                        <?php _e( 'Remove', 'mailhook' ); ?>
+                    </button>
+                </div>
+            </div> <!-- /.mailhook-connection-header -->
+
+            <div class="mailhook-connection-body">
+                <input type="hidden" name="<?php echo esc_attr($base_name); ?>[id]" value="<?php echo esc_attr( $conn['id'] ); ?>">
+                
+                <div class="mailhook-connection-grid">
+                    <!-- Column 1 -->
+                    <div class="mailhook-connection-column">
+                        <div class="mailhook-field-group">
+                            <label><?php _e( 'Connection Name', 'mailhook' ); ?></label>
+                            <input type="text" name="<?php echo esc_attr($base_name); ?>[name]" value="<?php echo esc_attr( $conn['name'] ); ?>" class="mailhook-connection-name-input" required />
+                            <p class="description"><?php _e( 'A friendly name to identify this connection.', 'mailhook' ); ?></p>
+                        </div>
+
+                        <div class="mailhook-field-group">
+                            <label><?php _e( 'SMTP Host', 'mailhook' ); ?></label>
+                            <input type="text" name="<?php echo esc_attr($base_name); ?>[smtp_host]" value="<?php echo esc_attr( $conn['smtp_host'] ); ?>" placeholder="smtp.example.com" />
+                        </div>
+
+                        <div class="mailhook-field-row">
+                            <div class="mailhook-field-group">
+                                <label><?php _e( 'SMTP Port', 'mailhook' ); ?></label>
+                                <input type="number" name="<?php echo esc_attr($base_name); ?>[smtp_port]" value="<?php echo esc_attr( $conn['smtp_port'] ); ?>" />
+                            </div>
+                            <div class="mailhook-field-group">
+                                <label><?php _e( 'Encryption', 'mailhook' ); ?></label>
+                                <select name="<?php echo esc_attr($base_name); ?>[smtp_encryption]">
+                                    <option value="none" <?php selected( $conn['smtp_encryption'], 'none' ); ?>><?php _e( 'None', 'mailhook' ); ?></option>
+                                    <option value="ssl" <?php selected( $conn['smtp_encryption'], 'ssl' ); ?>><?php _e( 'SSL', 'mailhook' ); ?></option>
+                                    <option value="tls" <?php selected( $conn['smtp_encryption'], 'tls' ); ?>><?php _e( 'TLS', 'mailhook' ); ?></option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mailhook-field-group">
+                            <label><?php _e( 'SMTP Authentication', 'mailhook' ); ?></label>
+                            <div class="mailhook-radio-group">
+                                <label>
+                                    <input type="radio" name="<?php echo esc_attr($base_name); ?>[smtp_auth]" value="1" <?php checked( $conn['smtp_auth'], '1' ); ?> />
+                                    <?php _e( 'Yes', 'mailhook' ); ?>
+                                </label>
+                                <label>
+                                    <input type="radio" name="<?php echo esc_attr($base_name); ?>[smtp_auth]" value="0" <?php checked( $conn['smtp_auth'], '0' ); ?> />
+                                    <?php _e( 'No', 'mailhook' ); ?>
+                                </label>
+                            </div>
+                        </div>
+                    </div> <!-- /.mailhook-connection-column-1 -->
+
+                    <!-- Column 2 -->
+                    <div class="mailhook-connection-column">
+                        <div class="mailhook-field-group">
+                            <label><?php _e( 'SMTP Username', 'mailhook' ); ?></label>
+                            <input type="text" name="<?php echo esc_attr($base_name); ?>[smtp_username]" value="<?php echo esc_attr( $conn['smtp_username'] ); ?>" autocomplete="off" />
+                        </div>
+
+                        <div class="mailhook-field-group">
+                            <label><?php _e( 'SMTP Password', 'mailhook' ); ?></label>
+                            <input type="password" name="<?php echo esc_attr($base_name); ?>[smtp_password]" value="<?php echo $has_password ? '********' : ''; ?>" placeholder="<?php echo $has_password ? '********' : ''; ?>" autocomplete="new-password" />
+                        </div>
+
+                        <div class="mailhook-field-group">
+                            <label><?php _e( 'From Email Override', 'mailhook' ); ?></label>
+                            <input type="email" name="<?php echo esc_attr($base_name); ?>[from_email]" value="<?php echo esc_attr( $conn['from_email'] ); ?>" placeholder="noreply@example.com" />
+                            <p class="description"><?php _e( 'Leave blank to use primary.', 'mailhook' ); ?></p>
+                        </div>
+
+                        <div class="mailhook-field-group">
+                            <label><?php _e( 'From Name Override', 'mailhook' ); ?></label>
+                            <input type="text" name="<?php echo esc_attr($base_name); ?>[from_name]" value="<?php echo esc_attr( $conn['from_name'] ); ?>" placeholder="My Site" />
+                            <p class="description"><?php _e( 'Leave blank to use primary.', 'mailhook' ); ?></p>
+                        </div>
+                    </div> <!-- /.mailhook-connection-column-2 -->
+                </div> <!-- /.mailhook-connection-grid -->
+            </div> <!-- /.mailhook-connection-body -->
+        </div> <!-- /.mailhook-connection-row -->
         <?php
     }
 }

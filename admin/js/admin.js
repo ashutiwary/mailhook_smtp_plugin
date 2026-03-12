@@ -418,4 +418,175 @@
         });
     }
 
+    /* =========================================================
+       6. ADDITIONAL CONNECTIONS (Backup Routing)
+    ========================================================= */
+    const addConnectionBtn = document.getElementById('mailhook-add-connection-btn');
+    const connectionsContainer = document.getElementById('mailhook-connections-container');
+    const backupSelect = document.getElementById('backup_connection_id');
+
+    function updateBackupSelectOptions() {
+        if (!backupSelect || !connectionsContainer) return;
+        
+        // Save current selection to restore if possible
+        const currentVal = backupSelect.value;
+        const rows = connectionsContainer.querySelectorAll('.mailhook-connection-row');
+        
+        // Reset options to just "None"
+        backupSelect.innerHTML = '<option value="none">' + (data.noneDisabled || 'None (Disabled)') + '</option>';
+        
+        // Re-populate from current rows
+        rows.forEach(function(row) {
+            const id = row.getAttribute('data-id');
+            const nameInput = row.querySelector('.mailhook-connection-name-input');
+            const name = nameInput ? nameInput.value : 'New Connection';
+            
+            const option = document.createElement('option');
+            option.value = id;
+            option.textContent = name;
+            backupSelect.appendChild(option);
+        });
+
+        // Try to restore previous selection
+        backupSelect.value = currentVal;
+        if (backupSelect.selectedIndex === -1) {
+            backupSelect.value = 'none'; // Revert to none if previous selection was deleted
+        }
+    }
+
+    /* Backup Toggle Interaction */
+    const backupToggle = document.getElementById('backup_enabled');
+    const backupSelectorWrap = document.getElementById('backup-connection-selector-wrap');
+    if (backupToggle && backupSelectorWrap) {
+        backupToggle.addEventListener('change', function() {
+            backupSelectorWrap.style.display = this.checked ? 'flex' : 'none';
+        });
+    }
+
+    if (addConnectionBtn && connectionsContainer) {
+        addConnectionBtn.addEventListener('click', function() {
+            const rows = connectionsContainer.querySelectorAll('.mailhook-connection-row');
+            const newIndex = rows.length > 0 ? parseInt(rows[rows.length - 1].getAttribute('data-index')) + 1 : 0;
+            const newId = 'mh_conn_' + Math.random().toString(36).substr(2, 9);
+            const baseName = 'additional_connections[' + newIndex + ']';
+            
+            // Remove the "No connections yet" message if it exists
+            const noConnMsg = connectionsContainer.querySelector('.mailhook-no-connections');
+            if (noConnMsg) noConnMsg.remove();
+
+            const template = `
+                <div class="mailhook-connection-row" data-index="${newIndex}" data-id="${newId}">
+                    <div class="mailhook-connection-header">
+                        <div class="mailhook-connection-header-left">
+                            <span class="mailhook-connection-toggle-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            </span>
+                            <h3 class="mailhook-connection-title">New Connection</h3>
+                        </div>
+                        <div class="mailhook-connection-header-actions">
+                            <button type="button" class="mailhook-remove-connection-btn" title="Remove Connection">Remove</button>
+                        </div>
+                    </div>
+
+                    <div class="mailhook-connection-body">
+                        <input type="hidden" name="${baseName}[id]" value="${newId}">
+                        <div class="mailhook-connection-grid">
+                            <div class="mailhook-connection-column">
+                                <div class="mailhook-field-group">
+                                    <label>Connection Name</label>
+                                    <input type="text" name="${baseName}[name]" value="New Connection" class="mailhook-connection-name-input" required />
+                                    <p class="description">A friendly name to identify this connection.</p>
+                                </div>
+                                <div class="mailhook-field-group">
+                                    <label>SMTP Host</label>
+                                    <input type="text" name="${baseName}[smtp_host]" value="" placeholder="smtp.example.com" />
+                                </div>
+                                <div class="mailhook-field-row">
+                                    <div class="mailhook-field-group">
+                                        <label>SMTP Port</label>
+                                        <input type="number" name="${baseName}[smtp_port]" value="587" />
+                                    </div>
+                                    <div class="mailhook-field-group">
+                                        <label>Encryption</label>
+                                        <select name="${baseName}[smtp_encryption]">
+                                            <option value="none">None</option>
+                                            <option value="ssl">SSL</option>
+                                            <option value="tls" selected>TLS</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mailhook-field-group">
+                                    <label>SMTP Authentication</label>
+                                    <div class="mailhook-radio-group">
+                                        <label><input type="radio" name="${baseName}[smtp_auth]" value="1" checked /> Yes</label>
+                                        <label><input type="radio" name="${baseName}[smtp_auth]" value="0" /> No</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mailhook-connection-column">
+                                <div class="mailhook-field-group">
+                                    <label>SMTP Username</label>
+                                    <input type="text" name="${baseName}[smtp_username]" value="" autocomplete="off" />
+                                </div>
+                                <div class="mailhook-field-group">
+                                    <label>SMTP Password</label>
+                                    <input type="password" name="${baseName}[smtp_password]" value="" autocomplete="new-password" />
+                                </div>
+                                <div class="mailhook-field-group">
+                                    <label>From Email Override</label>
+                                    <input type="email" name="${baseName}[from_email]" value="" placeholder="noreply@example.com" />
+                                    <p class="description">Leave blank to use primary.</p>
+                                </div>
+                                <div class="mailhook-field-group">
+                                    <label>From Name Override</label>
+                                    <input type="text" name="${baseName}[from_name]" value="" placeholder="My Site" />
+                                    <p class="description">Leave blank to use primary.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Append template
+            connectionsContainer.insertAdjacentHTML('beforeend', template);
+            updateBackupSelectOptions();
+        });
+
+        // Event delegation for Remove Buttons, Collapse Toggle, and Name Input changes
+        connectionsContainer.addEventListener('click', function(e) {
+            // Remove Connection logic
+            if (e.target.classList.contains('mailhook-remove-connection-btn')) {
+                if (confirm(data.confirmDeleteConn || 'Are you sure you want to remove this connection?')) {
+                    e.target.closest('.mailhook-connection-row').remove();
+                    updateBackupSelectOptions();
+                    
+                    if (connectionsContainer.querySelectorAll('.mailhook-connection-row').length === 0) {
+                        connectionsContainer.innerHTML = '<p class="mailhook-no-connections description">No additional connections configured yet.</p>';
+                    }
+                }
+                return;
+            }
+
+            // Collapse Toggle logic
+            const header = e.target.closest('.mailhook-connection-header');
+            if (header && !e.target.classList.contains('mailhook-remove-connection-btn')) {
+                const row = header.closest('.mailhook-connection-row');
+                row.classList.toggle('collapsed');
+            }
+        });
+        
+        // Listen for name changes to update titles and dropdown immediately
+        connectionsContainer.addEventListener('input', function(e) {
+            if (e.target.classList.contains('mailhook-connection-name-input')) {
+                const row = e.target.closest('.mailhook-connection-row');
+                const title = row.querySelector('.mailhook-connection-title');
+                if (title) {
+                    title.textContent = e.target.value || 'New Connection';
+                }
+                updateBackupSelectOptions();
+            }
+        });
+    }
+
 }());

@@ -13,6 +13,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class MailHook_Mailer {
 
     /**
+     * Optional override connection for Backup/Smart Routing.
+     *
+     * @var array|null
+     */
+    private static $override_connection = null;
+
+    /**
      * Stored plugin settings.
      *
      * @var array
@@ -40,6 +47,15 @@ class MailHook_Mailer {
     }
 
     /**
+     * Set a temporary connection override.
+     *
+     * @param array|null $connection The connection data array or null to reset.
+     */
+    public static function set_connection_override( $connection ) {
+        self::$override_connection = $connection;
+    }
+
+    /**
      * Configure PHPMailer to use SMTP.
      *
      * This fires every time wp_mail() is called.
@@ -48,20 +64,23 @@ class MailHook_Mailer {
      */
     public function configure_smtp( $phpmailer ) {
         $phpmailer->isSMTP();
-        $phpmailer->Host = $this->settings['smtp_host'];
+
+        $conn = self::$override_connection ? self::$override_connection : $this->settings;
+
+        $phpmailer->Host = $conn['smtp_host'];
 
         // Clamp port to valid range
         $port = intval( $this->settings['smtp_port'] );
         $phpmailer->Port = ( $port >= 1 && $port <= 65535 ) ? $port : 587;
 
         // Validate encryption against allowlist before assigning
-        $phpmailer->SMTPSecure = $this->get_encryption();
+        $phpmailer->SMTPSecure = $this->get_encryption( $conn );
 
         // Authentication
-        if ( ! empty( $this->settings['smtp_auth'] ) && $this->settings['smtp_auth'] === '1' ) {
+        if ( ! empty( $conn['smtp_auth'] ) && $conn['smtp_auth'] === '1' ) {
             $phpmailer->SMTPAuth = true;
-            $phpmailer->Username = $this->settings['smtp_username'];
-            $phpmailer->Password = $this->decrypt_password( $this->settings['smtp_password'] );
+            $phpmailer->Username = $conn['smtp_username'];
+            $phpmailer->Password = $this->decrypt_password( $conn['smtp_password'] );
         } else {
             $phpmailer->SMTPAuth = false;
         }
@@ -124,11 +143,13 @@ class MailHook_Mailer {
     /**
      * Get encryption type.
      *
+     * @param array|null $conn Specific connection to check, or null for default.
      * @return string
      */
-    private function get_encryption() {
+    private function get_encryption( $conn = null ) {
+        $conn = $conn ?: $this->settings;
         $allowed    = array( 'tls', 'ssl', 'none' );
-        $encryption = isset( $this->settings['smtp_encryption'] ) ? $this->settings['smtp_encryption'] : 'tls';
+        $encryption = isset( $conn['smtp_encryption'] ) ? $conn['smtp_encryption'] : 'tls';
 
         // Only allow known values; fall back to TLS for anything unexpected
         if ( ! in_array( $encryption, $allowed, true ) ) {
@@ -145,8 +166,9 @@ class MailHook_Mailer {
      * @return string
      */
     public function set_from_email( $email ) {
-        if ( ! empty( $this->settings['from_email'] ) ) {
-            return sanitize_email( $this->settings['from_email'] );
+        $conn = self::$override_connection ? self::$override_connection : $this->settings;
+        if ( ! empty( $conn['from_email'] ) ) {
+            return sanitize_email( $conn['from_email'] );
         }
         return $email;
     }
@@ -158,8 +180,9 @@ class MailHook_Mailer {
      * @return string
      */
     public function set_from_name( $name ) {
-        if ( ! empty( $this->settings['from_name'] ) ) {
-            return sanitize_text_field( $this->settings['from_name'] );
+        $conn = self::$override_connection ? self::$override_connection : $this->settings;
+        if ( ! empty( $conn['from_name'] ) ) {
+            return sanitize_text_field( $conn['from_name'] );
         }
         return $name;
     }

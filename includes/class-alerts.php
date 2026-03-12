@@ -72,6 +72,14 @@ class MailHook_Alerts {
             return;
         }
 
+        // If a backup retry is in progress, don't send an alert for the primary failure yet.
+        // Unless this specific error is tagged as the backup failure itself.
+        if ( class_exists( 'MailHook_Backup' ) && MailHook_Backup::is_retrying() ) {
+            if ( ! isset( $wp_error->errors['mailhook_is_backup_failure'] ) ) {
+                return;
+            }
+        }
+
         $emails = $this->get_alert_emails();
         if ( empty( $emails ) ) {
             return;
