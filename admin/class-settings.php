@@ -211,20 +211,19 @@ class MailHook_Settings {
         $has_password = ! empty( $settings['smtp_password'] );
         ?>
         <div class="wrap mailhook-wrap">
+
+            <?php if ( $saved ) : ?>
+                <div class="notice notice-success is-dismissible inline" style="margin-top: 0; margin-bottom: 20px;">
+                    <p><strong><?php _e( 'Settings saved successfully!', 'mailhook' ); ?></strong></p>
+                </div>
+            <?php endif; ?>
+
             <div class="mailhook-header">
                 <h1>
                     <?php _e( 'MailHook SMTP Settings', 'mailhook' ); ?>
                 </h1>
                 <p class="mailhook-tagline"><?php _e( 'Configure your SMTP server to send WordPress emails reliably.', 'mailhook' ); ?></p>
             </div>
-
-            <?php if ( $saved ) : ?>
-                <div class="mailhook-notice-wrap">
-                    <div class="notice notice-success is-dismissible mailhook-notice">
-                        <p><strong><?php _e( 'Settings saved successfully!', 'mailhook' ); ?></strong></p>
-                    </div>
-                </div>
-            <?php endif; ?>
 
             <div class="mailhook-container">
             
