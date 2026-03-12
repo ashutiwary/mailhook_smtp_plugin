@@ -57,6 +57,16 @@ class MailHook_Settings {
             'mailhook-logs',
             array( 'MailHook_Logger', 'render_page' )
         );
+
+        // Smart Routing sub-page
+        add_submenu_page(
+            'mailhook',
+            __( 'Smart Routing', 'mailhook' ),
+            __( 'Smart Routing', 'mailhook' ),
+            'manage_options',
+            'mailhook-routing',
+            array( $this, 'render_page' ) // Re-uses render_page with routing tab active
+        );
         // Note: Email Reports submenu is registered by MailHook_Email_Report class.
     }
 
@@ -100,6 +110,8 @@ class MailHook_Settings {
                 'loading'         => __( 'Loading…', 'mailhook' ),
                 'error'           => __( 'Error', 'mailhook' ),
                 'logDeleted'      => __( 'Logs deleted.', 'mailhook' ),
+                'confirmDeleteConn' => __( 'Are you sure you want to remove this connection?', 'mailhook' ),
+                'confirmDeleteRule' => __( 'Are you sure you want to remove this routing rule?', 'mailhook' ),
             )
         );
     }
@@ -205,6 +217,43 @@ class MailHook_Settings {
         }
         $settings['additional_connections'] = $additional;
 
+        // Smart Routing
+        $settings['routing_enabled'] = sanitize_text_field( $_POST['routing_enabled'] ?? '0' );
+        $routing_rules = array();
+        if ( isset( $_POST['routing_rules'] ) && is_array( $_POST['routing_rules'] ) ) {
+            foreach ( $_POST['routing_rules'] as $rule ) {
+                $conn_id = sanitize_text_field( $rule['connection_id'] ?? '' );
+                if ( empty( $conn_id ) ) continue;
+
+                $groups = array();
+                if ( isset( $rule['groups'] ) && is_array( $rule['groups'] ) ) {
+                    foreach ( $rule['groups'] as $group ) {
+                        $conditions = array();
+                        if ( isset( $group['conditions'] ) && is_array( $group['conditions'] ) ) {
+                            foreach ( $group['conditions'] as $cond ) {
+                                $conditions[] = array(
+                                    'field'    => sanitize_text_field( $cond['field'] ?? 'subject' ),
+                                    'operator' => sanitize_text_field( $cond['operator'] ?? 'contains' ),
+                                    'value'    => sanitize_text_field( $cond['value'] ?? '' ),
+                                );
+                            }
+                        }
+                        if ( ! empty( $conditions ) ) {
+                            $groups[] = array( 'conditions' => $conditions );
+                        }
+                    }
+                }
+                
+                if ( ! empty( $groups ) ) {
+                    $routing_rules[] = array(
+                        'connection_id' => $conn_id,
+                        'groups'        => $groups,
+                    );
+                }
+            }
+        }
+        $settings['routing_rules'] = $routing_rules;
+
         update_option( self::OPTION_KEY, $settings );
 
         $redirect_args = array(
@@ -280,6 +329,7 @@ class MailHook_Settings {
                         <a href="#tab-general" class="nav-tab nav-tab-active" data-tab="general"><?php _e( 'General', 'mailhook' ); ?></a>
                         <a href="#tab-alerts" class="nav-tab" data-tab="alerts"><?php _e( 'Alerts', 'mailhook' ); ?></a>
                         <a href="#tab-additional" class="nav-tab" data-tab="additional"><?php _e( 'Additional Connections', 'mailhook' ); ?></a>
+                        <a href="#tab-routing" class="nav-tab" data-tab="routing"><?php _e( 'Smart Routing', 'mailhook' ); ?></a>
                     </nav>
                 </div>
 
@@ -537,6 +587,62 @@ class MailHook_Settings {
 
                     </div><!-- /#tab-additional -->
 
+                    <!-- Tab: Smart Routing -->
+                    <div id="tab-routing" class="mailhook-tab-content" style="display:none;">
+                        
+                        <div class="mailhook-card">
+                            <h2 class="mailhook-card-title"><?php _e( 'Smart Routing Configuration', 'mailhook' ); ?></h2>
+                            <p><?php _e( 'Route emails through different additional connections based on configured conditions. Emails that do not match any of the conditions below will be sent via your Primary Connection.', 'mailhook' ); ?></p>
+                            
+                            <table class="form-table mailhook-table">
+                                <tr>
+                                    <th><label for="routing_enabled"><?php _e( 'Smart Routing', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <label class="mailhook-toggle">
+                                            <input type="hidden" name="routing_enabled" value="0" />
+                                            <input type="checkbox" id="routing_enabled" name="routing_enabled" value="1"
+                                                <?php checked( $settings['routing_enabled'] ?? '0', '1' ); ?> />
+                                            <span class="mailhook-toggle-slider"></span>
+                                            <span class="mailhook-toggle-label"><?php _e( 'Enable Smart Routing', 'mailhook' ); ?></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="mailhook-card" id="mailhook-no-additional-notice" style="<?php echo empty( $settings['additional_connections'] ) ? '' : 'display:none;'; ?>">
+                            <div class="notice notice-info inline">
+                                <p><?php printf( 
+                                    __( 'You need to configure at least one %s before you can use Smart Routing.', 'mailhook' ),
+                                    '<a href="#tab-additional" class="mailhook-switch-tab" data-tab="additional">' . __( 'additional connection', 'mailhook' ) . '</a>'
+                                ); ?></p>
+                            </div>
+                        </div>
+
+                        <div id="mailhook-routing-rules-container" style="<?php echo empty( $settings['additional_connections'] ) ? 'display:none;' : ''; ?>">
+                            <div class="mailhook-rules-list">
+                                <?php 
+                                $rules = $settings['routing_rules'] ?? array();
+                                foreach ( $rules as $rule_idx => $rule ) {
+                                    $this->render_routing_rule_row( $rule, $rule_idx, $settings['additional_connections'] );
+                                }
+                                ?>
+                            </div>
+                            
+                <p style="margin-top: 20px; text-align: center;">
+                    <button type="button" id="mailhook-add-rule-btn" class="button">
+                        <?php _e( 'Add New Rule', 'mailhook' ); ?>
+                    </button>
+                </p>
+                        </div>
+
+                        <p class="submit">
+                            <input type="submit" name="mailhook_save_settings" class="button button-primary button-hero"
+                                   value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
+                        </p>
+
+                    </div><!-- /#tab-routing -->
+
                 </form>
 
                 <!-- Test Email Section (General Tab Only) -->
@@ -677,6 +783,131 @@ class MailHook_Settings {
                 </div> <!-- /.mailhook-connection-grid -->
             </div> <!-- /.mailhook-connection-body -->
         </div> <!-- /.mailhook-connection-row -->
+        <?php
+    }
+
+    /**
+     * Render a single routing rule row.
+     *
+     * @param array $rule                   The rule data.
+     * @param int   $rule_idx               The rule index.
+     * @param array $additional_connections Available connections.
+     */
+    public function render_routing_rule_row( $rule, $rule_idx, $additional_connections ) {
+        $connection_id = $rule['connection_id'] ?? '';
+        $groups        = $rule['groups'] ?? array();
+        $base_name     = "routing_rules[{$rule_idx}]";
+        ?>
+        <div class="mailhook-rule-row" data-index="<?php echo esc_attr( $rule_idx ); ?>">
+            <div class="mailhook-rule-header">
+                <div class="mailhook-rule-selector">
+                    <span><?php _e( 'Send with', 'mailhook' ); ?></span>
+                    <select name="<?php echo esc_attr( $base_name ); ?>[connection_id]" required>
+                        <option value=""><?php _e( '-- Select a Connection --', 'mailhook' ); ?></option>
+                        <?php foreach ( $additional_connections as $conn ) : ?>
+                            <option value="<?php echo esc_attr( $conn['id'] ); ?>" <?php selected( $connection_id, $conn['id'] ); ?>>
+                                <?php echo esc_html( $conn['name'] ); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <span><?php _e( 'if the following conditions are met...', 'mailhook' ); ?></span>
+                </div>
+                <div class="mailhook-rule-actions">
+                    <button type="button" class="mailhook-remove-rule-btn" title="<?php esc_attr_e( 'Remove Rule', 'mailhook' ); ?>">&times;</button>
+                </div>
+            </div>
+
+            <div class="mailhook-rule-body">
+                <div class="mailhook-groups-container">
+                    <?php 
+                    foreach ( $groups as $group_idx => $group ) {
+                        $this->render_routing_group_row( $group, $rule_idx, $group_idx );
+                    }
+                    if ( empty( $groups ) ) {
+                        $this->render_routing_group_row( array(), $rule_idx, 0 );
+                    }
+                    ?>
+                </div>
+                <button type="button" class="button mailhook-add-group-btn"><?php _e( 'Add New Group', 'mailhook' ); ?></button>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render a group of conditions within a rule.
+     *
+     * @param array $group     The group data.
+     * @param int   $rule_idx  The rule index.
+     * @param int   $group_idx The group index.
+     */
+    private function render_routing_group_row( $group, $rule_idx, $group_idx ) {
+        $conditions = $group['conditions'] ?? array();
+        $base_name  = "routing_rules[{$rule_idx}][groups][{$group_idx}]";
+        ?>
+        <div class="mailhook-group-row" data-index="<?php echo esc_attr( $group_idx ); ?>">
+            <?php if ( $group_idx > 0 ) : ?>
+                <div class="mailhook-group-separator"><span><?php _e( 'or', 'mailhook' ); ?></span></div>
+            <?php endif; ?>
+            
+            <div class="mailhook-group-inner">
+                <div class="mailhook-conditions-container">
+                    <?php 
+                    foreach ( $conditions as $cond_idx => $cond ) {
+                        $this->render_routing_condition_row( $cond, $rule_idx, $group_idx, $cond_idx );
+                    }
+                    if ( empty( $conditions ) ) {
+                        $this->render_routing_condition_row( array(), $rule_idx, $group_idx, 0 );
+                    }
+                    ?>
+                </div>
+                <div class="mailhook-group-actions">
+                    <button type="button" class="mailhook-remove-group-btn" title="<?php esc_attr_e( 'Remove Group', 'mailhook' ); ?>">&times;</button>
+                </div>
+            </div>
+        </div>
+        <?php
+    }
+
+    /**
+     * Render a single condition row.
+     *
+     * @param array $cond      The condition data.
+     * @param int   $rule_idx  The rule index.
+     * @param int   $group_idx The group index.
+     * @param int   $cond_idx  The condition index.
+     */
+    private function render_routing_condition_row( $cond, $rule_idx, $group_idx, $cond_idx ) {
+        $field    = $cond['field'] ?? 'subject';
+        $operator = $cond['operator'] ?? 'contains';
+        $value    = $cond['value'] ?? '';
+        $base_name = "routing_rules[{$rule_idx}][groups][{$group_idx}][conditions][{$cond_idx}]";
+        ?>
+        <div class="mailhook-condition-row" data-index="<?php echo esc_attr( $cond_idx ); ?>">
+            <select name="<?php echo esc_attr( $base_name ); ?>[field]">
+                <option value="subject" <?php selected( $field, 'subject' ); ?>><?php _e( 'Subject', 'mailhook' ); ?></option>
+                <option value="to" <?php selected( $field, 'to' ); ?>><?php _e( 'To', 'mailhook' ); ?></option>
+                <option value="from" <?php selected( $field, 'from' ); ?>><?php _e( 'From', 'mailhook' ); ?></option>
+                <option value="body" <?php selected( $field, 'body' ); ?>><?php _e( 'Body', 'mailhook' ); ?></option>
+            </select>
+
+            <select name="<?php echo esc_attr( $base_name ); ?>[operator]">
+                <option value="contains" <?php selected( $operator, 'contains' ); ?>><?php _e( 'Contains', 'mailhook' ); ?></option>
+                <option value="not_contains" <?php selected( $operator, 'not_contains' ); ?>><?php _e( 'Does not contain', 'mailhook' ); ?></option>
+                <option value="equals" <?php selected( $operator, 'equals' ); ?>><?php _e( 'Is equal to', 'mailhook' ); ?></option>
+                <option value="starts_with" <?php selected( $operator, 'starts_with' ); ?>><?php _e( 'Starts with', 'mailhook' ); ?></option>
+                <option value="ends_with" <?php selected( $operator, 'ends_with' ); ?>><?php _e( 'Ends with', 'mailhook' ); ?></option>
+            </select>
+
+            <input type="text" name="<?php echo esc_attr( $base_name ); ?>[value]" value="<?php echo esc_attr( $value ); ?>" placeholder="<?php esc_attr_e( 'Value...', 'mailhook' ); ?>" />
+
+            <div class="mailhook-condition-actions">
+                <button type="button" class="button mailhook-add-condition-btn"><?php _e( 'And', 'mailhook' ); ?></button>
+                <?php if ( $cond_idx > 0 ) : ?>
+                    <button type="button" class="mailhook-remove-condition-btn" title="<?php esc_attr_e( 'Remove Condition', 'mailhook' ); ?>">&times;</button>
+                <?php endif; ?>
+            </div>
+        </div>
         <?php
     }
 }

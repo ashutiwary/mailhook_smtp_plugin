@@ -452,6 +452,34 @@
         if (backupSelect.selectedIndex === -1) {
             backupSelect.value = 'none'; // Revert to none if previous selection was deleted
         }
+
+        // Also update all Smart Routing rule connection selects
+        updateRoutingConnectionSelects();
+    }
+
+    function updateRoutingConnectionSelects() {
+        const ruleSelects = document.querySelectorAll('.mailhook-rule-selector select');
+        if (!ruleSelects.length) return;
+
+        const connections = [];
+        connectionsContainer.querySelectorAll('.mailhook-connection-row').forEach(row => {
+            connections.push({
+                id: row.getAttribute('data-id'),
+                name: row.querySelector('.mailhook-connection-name-input').value || 'New Connection'
+            });
+        });
+
+        ruleSelects.forEach(select => {
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">' + (data.selectConn || '-- Select a Connection --') + '</option>';
+            connections.forEach(conn => {
+                const opt = document.createElement('option');
+                opt.value = conn.id;
+                opt.textContent = conn.name;
+                select.appendChild(opt);
+            });
+            select.value = currentVal;
+        });
     }
 
     /* Backup Toggle Interaction */
@@ -551,6 +579,12 @@
             // Append template
             connectionsContainer.insertAdjacentHTML('beforeend', template);
             updateBackupSelectOptions();
+
+            // Show routing container if hidden
+            const routingContainer = document.getElementById('mailhook-routing-rules-container');
+            const noAdditionalNotice = document.getElementById('mailhook-no-additional-notice');
+            if (routingContainer) routingContainer.style.display = 'block';
+            if (noAdditionalNotice) noAdditionalNotice.style.display = 'none';
         });
 
         // Event delegation for Remove Buttons, Collapse Toggle, and Name Input changes
@@ -558,12 +592,27 @@
             // Remove Connection logic
             if (e.target.classList.contains('mailhook-remove-connection-btn')) {
                 if (confirm(data.confirmDeleteConn || 'Are you sure you want to remove this connection?')) {
-                    e.target.closest('.mailhook-connection-row').remove();
+                    const row = e.target.closest('.mailhook-connection-row');
+                    const id = row.getAttribute('data-id');
+                    row.remove();
                     updateBackupSelectOptions();
                     
                     if (connectionsContainer.querySelectorAll('.mailhook-connection-row').length === 0) {
                         connectionsContainer.innerHTML = '<p class="mailhook-no-connections description">No additional connections configured yet.</p>';
+                        const routingContainer = document.getElementById('mailhook-routing-rules-container');
+                        const noAdditionalNotice = document.getElementById('mailhook-no-additional-notice');
+                        if (routingContainer) routingContainer.style.display = 'none';
+                        if (noAdditionalNotice) noAdditionalNotice.style.display = 'block';
                     }
+
+                    // Remove rules that use this connection
+                    document.querySelectorAll('.mailhook-rule-row').forEach(rule => {
+                        const select = rule.querySelector('.mailhook-rule-selector select');
+                        if (select && select.value === id) {
+                            rule.remove();
+                            reindexRules();
+                        }
+                    });
                 }
                 return;
             }
@@ -579,7 +628,7 @@
         // Listen for name changes to update titles and dropdown immediately
         connectionsContainer.addEventListener('input', function(e) {
             if (e.target.classList.contains('mailhook-connection-name-input')) {
-                const row = e.target.closest('.mailhook-connection-row');
+                const row = e.target.closest('.mailhook-connection-name-input').closest('.mailhook-connection-row');
                 const title = row.querySelector('.mailhook-connection-title');
                 if (title) {
                     title.textContent = e.target.value || 'New Connection';
@@ -588,5 +637,255 @@
             }
         });
     }
+
+    /* =========================================================
+       7. SMART ROUTING RULE BUILDER
+    ========================================================= */
+    const addRuleBtn = document.getElementById('mailhook-add-rule-btn');
+    const rulesContainer = document.querySelector('.mailhook-rules-list');
+
+    if (addRuleBtn && rulesContainer) {
+        addRuleBtn.addEventListener('click', function() {
+            const ruleRows = rulesContainer.querySelectorAll('.mailhook-rule-row');
+            const newRuleIdx = ruleRows.length;
+            
+            // Get current connections for the select
+            const connections = [];
+            connectionsContainer.querySelectorAll('.mailhook-connection-row').forEach(row => {
+                connections.push({
+                    id: row.getAttribute('data-id'),
+                    name: row.querySelector('.mailhook-connection-name-input').value || 'New Connection'
+                });
+            });
+
+            const connOptions = connections.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            const baseName = `routing_rules[${newRuleIdx}]`;
+
+            const ruleTemplate = `
+                <div class="mailhook-rule-row" data-index="${newRuleIdx}">
+                    <div class="mailhook-rule-header">
+                        <div class="mailhook-rule-selector">
+                            <span>Send with</span>
+                            <select name="${baseName}[connection_id]" required>
+                                <option value="">-- Select a Connection --</option>
+                                ${connOptions}
+                            </select>
+                            <span>if the following conditions are met...</span>
+                        </div>
+                        <div class="mailhook-rule-actions">
+                            <button type="button" class="mailhook-remove-rule-btn" title="Remove Rule">&times;</button>
+                        </div>
+                    </div>
+                    <div class="mailhook-rule-body">
+                        <div class="mailhook-groups-container">
+                            <!-- Group 0 -->
+                            <div class="mailhook-group-row" data-index="0">
+                                <div class="mailhook-group-inner">
+                                    <div class="mailhook-conditions-container">
+                                        <!-- Condition 0 -->
+                                        <div class="mailhook-condition-row" data-index="0">
+                                            <select name="${baseName}[groups][0][conditions][0][field]">
+                                                <option value="subject" selected>Subject</option>
+                                                <option value="to">To</option>
+                                                <option value="from">From</option>
+                                                <option value="body">Body</option>
+                                            </select>
+                                            <select name="${baseName}[groups][0][conditions][0][operator]">
+                                                <option value="contains" selected>Contains</option>
+                                                <option value="not_contains">Does not contain</option>
+                                                <option value="equals">Is equal to</option>
+                                                <option value="starts_with">Starts with</option>
+                                                <option value="ends_with">Ends with</option>
+                                            </select>
+                                            <input type="text" name="${baseName}[groups][0][conditions][0][value]" value="" placeholder="Value..." />
+                                            <div class="mailhook-condition-actions">
+                                                <button type="button" class="button mailhook-add-condition-btn">And</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mailhook-group-actions">
+                                        <button type="button" class="mailhook-remove-group-btn" title="Remove Group">&times;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="button mailhook-add-group-btn">Add New Group</button>
+                    </div>
+                </div>
+            `;
+            rulesContainer.insertAdjacentHTML('beforeend', ruleTemplate);
+        });
+
+        // Event delegation for all routing UI
+        rulesContainer.addEventListener('click', function(e) {
+            const target = e.target;
+
+            // 1. Remove Rule
+            if (target.classList.contains('mailhook-remove-rule-btn')) {
+                if (confirm(data.confirmDeleteRule || 'Are you sure you want to remove this routing rule?')) {
+                    target.closest('.mailhook-rule-row').remove();
+                    reindexRules();
+                }
+                return;
+            }
+
+            // 2. Add Group
+            if (target.classList.contains('mailhook-add-group-btn')) {
+                const ruleRow = target.closest('.mailhook-rule-row');
+                const groupsContainer = ruleRow.querySelector('.mailhook-groups-container');
+                const ruleIdx = ruleRow.getAttribute('data-index');
+                const newGroupIdx = groupsContainer.querySelectorAll('.mailhook-group-row').length;
+                const baseName = `routing_rules[${ruleIdx}][groups][${newGroupIdx}]`;
+
+                const groupTemplate = `
+                    <div class="mailhook-group-row" data-index="${newGroupIdx}">
+                        <div class="mailhook-group-separator"><span>or</span></div>
+                        <div class="mailhook-group-inner">
+                            <div class="mailhook-conditions-container">
+                                <div class="mailhook-condition-row" data-index="0">
+                                    <select name="${baseName}[conditions][0][field]">
+                                        <option value="subject" selected>Subject</option>
+                                        <option value="to">To</option>
+                                        <option value="from">From</option>
+                                        <option value="body">Body</option>
+                                    </select>
+                                    <select name="${baseName}[conditions][0][operator]">
+                                        <option value="contains" selected>Contains</option>
+                                        <option value="not_contains">Does not contain</option>
+                                        <option value="equals">Is equal to</option>
+                                        <option value="starts_with">Starts with</option>
+                                        <option value="ends_with">Ends with</option>
+                                    </select>
+                                    <input type="text" name="${baseName}[conditions][0][value]" value="" placeholder="Value..." />
+                                    <div class="mailhook-condition-actions">
+                                        <button type="button" class="button mailhook-add-condition-btn">And</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mailhook-group-actions">
+                                <button type="button" class="mailhook-remove-group-btn" title="Remove Group">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                groupsContainer.insertAdjacentHTML('beforeend', groupTemplate);
+                return;
+            }
+
+            // 3. Remove Group
+            if (target.classList.contains('mailhook-remove-group-btn')) {
+                const groupRow = target.closest('.mailhook-group-row');
+                const groupsContainer = groupRow.closest('.mailhook-groups-container');
+                const ruleRow = groupRow.closest('.mailhook-rule-row');
+                
+                groupRow.remove();
+                
+                // If last group, remove rule? Or just re-index? 
+                // Let's re-index. If no groups, rule is effectively empty.
+                if (groupsContainer.querySelectorAll('.mailhook-group-row').length === 0) {
+                    ruleRow.remove();
+                }
+                reindexRules();
+                return;
+            }
+
+            // 4. Add Condition
+            if (target.classList.contains('mailhook-add-condition-btn')) {
+                const conditionsContainer = target.closest('.mailhook-conditions-container');
+                const groupRow = target.closest('.mailhook-group-row');
+                const ruleRow = target.closest('.mailhook-rule-row');
+                
+                const ruleIdx = ruleRow.getAttribute('data-index');
+                const groupIdx = groupRow.getAttribute('data-index');
+                const newCondIdx = conditionsContainer.querySelectorAll('.mailhook-condition-row').length;
+                
+                const baseName = `routing_rules[${ruleIdx}][groups][${groupIdx}][conditions][${newCondIdx}]`;
+
+                const condTemplate = `
+                    <div class="mailhook-condition-row" data-index="${newCondIdx}">
+                        <select name="${baseName}[field]">
+                            <option value="subject" selected>Subject</option>
+                            <option value="to">To</option>
+                            <option value="from">From</option>
+                            <option value="body">Body</option>
+                        </select>
+                        <select name="${baseName}[operator]">
+                            <option value="contains" selected>Contains</option>
+                            <option value="not_contains">Does not contain</option>
+                            <option value="equals">Is equal to</option>
+                            <option value="starts_with">Starts with</option>
+                            <option value="ends_with">Ends with</option>
+                        </select>
+                        <input type="text" name="${baseName}[value]" value="" placeholder="Value..." />
+                        <div class="mailhook-condition-actions">
+                            <button type="button" class="button mailhook-add-condition-btn">And</button>
+                            <button type="button" class="mailhook-remove-condition-btn" title="Remove Condition">&times;</button>
+                        </div>
+                    </div>
+                `;
+                conditionsContainer.insertAdjacentHTML('beforeend', condTemplate);
+                return;
+            }
+
+            // 5. Remove Condition
+            if (target.classList.contains('mailhook-remove-condition-btn')) {
+                const row = target.closest('.mailhook-condition-row');
+                const container = row.closest('.mailhook-conditions-container');
+                row.remove();
+                reindexRules();
+                return;
+            }
+        });
+    }
+
+    function reindexRules() {
+        const ruleRows = document.querySelectorAll('.mailhook-rule-row');
+        ruleRows.forEach((ruleRow, ruleIdx) => {
+            ruleRow.setAttribute('data-index', ruleIdx);
+            
+            // Update connection select name
+            const connSelect = ruleRow.querySelector('.mailhook-rule-selector select');
+            if (connSelect) {
+                connSelect.name = `routing_rules[${ruleIdx}][connection_id]`;
+            }
+
+            // Update groups
+            const groupRows = ruleRow.querySelectorAll('.mailhook-group-row');
+            groupRows.forEach((groupRow, groupIdx) => {
+                groupRow.setAttribute('data-index', groupIdx);
+                
+                // Update separator (none for first group)
+                let separator = groupRow.querySelector('.mailhook-group-separator');
+                if (groupIdx === 0) {
+                    if (separator) separator.remove();
+                } else {
+                    if (!separator) {
+                        separator = document.createElement('div');
+                        separator.className = 'mailhook-group-separator';
+                        separator.innerHTML = '<span>or</span>';
+                        groupRow.insertBefore(separator, groupRow.firstChild);
+                    }
+                }
+
+                // Update conditions
+                const condRows = groupRow.querySelectorAll('.mailhook-condition-row');
+                condRows.forEach((condRow, condIdx) => {
+                    condRow.setAttribute('data-index', condIdx);
+                    
+                    const inputs = condRow.querySelectorAll('select, input');
+                    inputs.forEach(input => {
+                        const name = input.name;
+                        if (name) {
+                            const field = name.split(']').pop().replace('[', ''); // matches [field], [operator], [value]
+                            input.name = `routing_rules[${ruleIdx}][groups][${groupIdx}][conditions][${condIdx}][${field}]`;
+                        }
+                    });
+
+                    // Ensure remove button exists for all but first if count > 1 (optional logic)
+                });
+            });
+        });
+    }
+
 
 }());

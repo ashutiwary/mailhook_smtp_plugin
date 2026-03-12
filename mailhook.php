@@ -36,6 +36,7 @@ require_once MAILHOOK_ADMIN_DIR    . 'class-logger.php';
 require_once MAILHOOK_ADMIN_DIR    . 'class-email-report.php';
 require_once MAILHOOK_INCLUDES_DIR . 'class-alerts.php';
 require_once MAILHOOK_INCLUDES_DIR . 'class-backup.php';
+require_once MAILHOOK_INCLUDES_DIR . 'class-routing.php';
 
 /**
  * Initialize the plugin on plugins_loaded.
@@ -50,6 +51,7 @@ function mailhook_init() {
         new MailHook_Templates();
         new MailHook_Test_Mail();
         new MailHook_Email_Report();
+        new MailHook_Routing();
     }
 
     // Initialize mailer (always — so all wp_mail calls go through SMTP)
