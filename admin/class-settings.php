@@ -58,15 +58,6 @@ class MailHook_Settings {
             array( 'MailHook_Logger', 'render_page' )
         );
 
-        // Smart Routing sub-page
-        add_submenu_page(
-            'mailhook',
-            __( 'Smart Routing', 'mailhook' ),
-            __( 'Smart Routing', 'mailhook' ),
-            'manage_options',
-            'mailhook-routing',
-            array( $this, 'render_page' ) // Re-uses render_page with routing tab active
-        );
         // Note: Email Reports submenu is registered by MailHook_Email_Report class.
     }
 
