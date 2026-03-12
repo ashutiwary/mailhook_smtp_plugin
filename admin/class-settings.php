@@ -193,7 +193,8 @@ class MailHook_Settings {
                     'smtp_auth'       => sanitize_text_field( $conn['smtp_auth'] ?? '0' ),
                     'smtp_username'   => sanitize_text_field( wp_unslash( $conn['smtp_username'] ?? '' ) ),
                     'from_email'      => sanitize_email( $conn['from_email'] ?? '' ),
-                    'from_name'       => sanitize_text_field( wp_unslash( $conn['from_name'] ?? '' ) )
+                    'from_name'       => sanitize_text_field( wp_unslash( $conn['from_name'] ?? '' ) ),
+                    'is_collapsed'    => sanitize_text_field( $conn['is_collapsed'] ?? '0' ),
                 );
 
                 // Handle password for this connection
@@ -689,12 +690,15 @@ class MailHook_Settings {
             'smtp_password'   => '',
             'from_email'      => '',
             'from_name'       => '',
+            'is_collapsed'    => '0',
         );
         $conn = wp_parse_args( $conn, $defaults );
         $has_password = ! empty( $conn['smtp_password'] );
         $base_name = "additional_connections[{$index}]";
+        $is_collapsed = isset($conn['is_collapsed']) && $conn['is_collapsed'] === '1';
         ?>
-        <div class="mailhook-connection-row" data-index="<?php echo esc_attr( $index ); ?>" data-id="<?php echo esc_attr( $conn['id'] ); ?>">
+        <div class="mailhook-connection-row <?php echo $is_collapsed ? 'collapsed' : ''; ?>" data-index="<?php echo esc_attr( $index ); ?>" data-id="<?php echo esc_attr( $conn['id'] ); ?>">
+            <input type="hidden" name="<?php echo esc_attr($base_name); ?>[is_collapsed]" class="mailhook-connection-collapsed-state" value="<?php echo $is_collapsed ? '1' : '0'; ?>">
             <div class="mailhook-connection-header">
                 <div class="mailhook-connection-header-left">
                     <span class="mailhook-connection-toggle-icon">

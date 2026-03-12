@@ -504,6 +504,7 @@
 
             const template = `
                 <div class="mailhook-connection-row" data-index="${newIndex}" data-id="${newId}">
+                    <input type="hidden" name="${baseName}[is_collapsed]" class="mailhook-connection-collapsed-state" value="0">
                     <div class="mailhook-connection-header">
                         <div class="mailhook-connection-header-left">
                             <span class="mailhook-connection-toggle-icon">
@@ -621,7 +622,11 @@
             const header = e.target.closest('.mailhook-connection-header');
             if (header && !e.target.classList.contains('mailhook-remove-connection-btn')) {
                 const row = header.closest('.mailhook-connection-row');
-                row.classList.toggle('collapsed');
+                const isCollapsed = row.classList.toggle('collapsed');
+                const stateInput = row.querySelector('.mailhook-connection-collapsed-state');
+                if (stateInput) {
+                    stateInput.value = isCollapsed ? '1' : '0';
+                }
             }
         });
         
