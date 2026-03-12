@@ -260,4 +260,162 @@
         });
     }
 
+    /* =========================================================
+       4. SETTINGS TABS & DYNAMIC ALERTS EMAILS
+    ========================================================= */
+    const tabs = document.querySelectorAll('.mailhook-nav-tabs .nav-tab');
+    const tabContents = document.querySelectorAll('.mailhook-tab-content');
+    const testCardContainer = document.getElementById('mailhook-test-card-container');
+
+    if (tabs.length > 0) {
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                
+                // Update active tab link
+                tabs.forEach(t => t.classList.remove('nav-tab-active'));
+                this.classList.add('nav-tab-active');
+                
+                // Show target content, hide others
+                tabContents.forEach(content => {
+                    content.style.display = content.id === targetId ? 'block' : 'none';
+                });
+
+                // Only show Send Test Email card on the General tab
+                if (testCardContainer) {
+                    testCardContainer.style.display = targetId === 'tab-general' ? 'block' : 'none';
+                }
+
+                // Update hidden input for form submission
+                const activeTabInput = document.getElementById('mailhook-active-tab');
+                if (activeTabInput) {
+                    activeTabInput.value = this.getAttribute('data-tab');
+                }
+
+                // Update URL parameter without reloading (for shareability and refresh state)
+                if (window.history.replaceState) {
+                    const url = new URL(window.location);
+                    url.searchParams.set('tab', this.getAttribute('data-tab'));
+                    window.history.replaceState({}, '', url);
+                }
+            });
+        });
+
+        // Initialize active tab from URL if present
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTab = urlParams.get('tab');
+        if (activeTab) {
+            const tabToActivate = document.querySelector(`.mailhook-nav-tabs .nav-tab[data-tab="${activeTab}"]`);
+            if (tabToActivate) {
+                tabToActivate.click();
+            }
+        }
+    }
+
+    /* Dynamic Email Inputs for Alerts */
+    const addEmailBtn = document.getElementById('mailhook-add-email-btn');
+    const emailsContainer = document.getElementById('mailhook-alert-emails-container');
+    const maxEmails = 3;
+
+    function updateEmailButtons() {
+        if (!emailsContainer) return;
+        const rows = emailsContainer.querySelectorAll('.mailhook-alert-email-row');
+        
+        // Hide "Add" button if max reached
+        if (addEmailBtn) {
+            addEmailBtn.style.display = rows.length >= maxEmails ? 'none' : 'inline-block';
+        }
+
+        // Show/hide remove buttons depending on count
+        rows.forEach((row, index) => {
+            let removeBtn = row.querySelector('.mailhook-remove-email-btn');
+            if (rows.length === 1) {
+                if(removeBtn) removeBtn.remove();
+            } else {
+                if (!removeBtn) {
+                    removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'button mailhook-remove-email-btn';
+                    removeBtn.title = 'Remove this email';
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.addEventListener('click', function() {
+                        row.remove();
+                        updateEmailButtons();
+                    });
+                    row.appendChild(removeBtn);
+                }
+            }
+        });
+    }
+
+    if (addEmailBtn && emailsContainer) {
+        addEmailBtn.addEventListener('click', function() {
+            const rows = emailsContainer.querySelectorAll('.mailhook-alert-email-row');
+            if (rows.length >= maxEmails) return;
+
+            const newRow = document.createElement('div');
+            newRow.className = 'mailhook-alert-email-row';
+            newRow.style.cssText = 'margin-bottom: 10px; display: flex; align-items: center; gap: 10px;';
+            newRow.innerHTML = '<input type="email" name="alert_emails[]" value="" class="regular-text" placeholder="Enter email address" />';
+            
+            emailsContainer.appendChild(newRow);
+            updateEmailButtons();
+        });
+
+        // Attach events to existing remove buttons
+        emailsContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('mailhook-remove-email-btn')) {
+                e.target.closest('.mailhook-alert-email-row').remove();
+                updateEmailButtons();
+            }
+        });
+
+        updateEmailButtons();
+    }
+
+    /* Test Alert Button */
+    const testAlertBtn = document.getElementById('mailhook-test-alert');
+    if (testAlertBtn) {
+        testAlertBtn.addEventListener('click', function() {
+            const resultSpan = document.querySelector('.mailhook-test-alert-result');
+            
+            testAlertBtn.disabled = true;
+            testAlertBtn.textContent = 'Sending...';
+            if(resultSpan) {
+                resultSpan.textContent = '';
+                resultSpan.className = 'mailhook-test-alert-result';
+            }
+
+            const fd = new FormData();
+            fd.append('action', 'mailhook_send_test_alert');
+            fd.append('nonce', data.testNonce || '');
+
+            fetch(data.ajaxurl, {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin'
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if(resultSpan) {
+                    resultSpan.textContent = res.data;
+                    resultSpan.classList.add(res.success ? 'success' : 'error');
+                } else {
+                    showToast(res.data, res.success ? 'success' : 'error');
+                }
+            })
+            .catch(function(err) {
+                 if(resultSpan) {
+                    resultSpan.textContent = 'Request failed: ' + err.message;
+                    resultSpan.classList.add('error');
+                }
+            })
+            .finally(function() {
+                testAlertBtn.disabled = false;
+                testAlertBtn.textContent = 'Test Alert';
+            });
+        });
+    }
+
 }());

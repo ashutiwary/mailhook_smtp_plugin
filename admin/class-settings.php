@@ -144,13 +144,32 @@ class MailHook_Settings {
             $settings['smtp_password'] = $existing['smtp_password'] ?? '';
         }
 
+        // Alerts settings
+        $settings['alerts_enabled'] = sanitize_text_field( $_POST['alerts_enabled'] ?? '0' );
+        $alert_emails = array();
+        if ( isset( $_POST['alert_emails'] ) && is_array( $_POST['alert_emails'] ) ) {
+            foreach ( $_POST['alert_emails'] as $email ) {
+                $email = sanitize_email( $email );
+                if ( ! empty( $email ) ) {
+                    $alert_emails[] = $email;
+                }
+            }
+        }
+        $settings['alert_emails'] = array_slice( $alert_emails, 0, 3 ); // Max 3 emails
+
         update_option( self::OPTION_KEY, $settings );
 
+        $redirect_args = array(
+            'page'  => 'mailhook',
+            'saved' => '1',
+        );
+
+        if ( ! empty( $_POST['active_tab'] ) ) {
+            $redirect_args['tab'] = sanitize_text_field( $_POST['active_tab'] );
+        }
+
         // Redirect with success message
-        wp_safe_redirect( add_query_arg( array(
-            'page'    => 'mailhook',
-            'saved'   => '1',
-        ), admin_url( 'admin.php' ) ) );
+        wp_safe_redirect( add_query_arg( $redirect_args, admin_url( 'admin.php' ) ) );
         exit;
     }
 
@@ -184,6 +203,8 @@ class MailHook_Settings {
             'smtp_password'   => '',
             'from_email'      => get_option( 'admin_email' ),
             'from_name'       => get_bloginfo( 'name' ),
+            'alerts_enabled'  => '0',
+            'alert_emails'    => array( get_option( 'admin_email' ) ),
         );
         $settings = wp_parse_args( $settings, $defaults );
 
@@ -206,12 +227,27 @@ class MailHook_Settings {
             <?php endif; ?>
 
             <div class="mailhook-container">
-                <!-- Settings Form -->
-                <form method="post" action="" class="mailhook-form">
-                    <?php wp_nonce_field( 'mailhook_save', 'mailhook_nonce' ); ?>
+            
+                <div class="mailhook-tabs-wrapper">
+                    <nav class="nav-tab-wrapper mailhook-nav-tabs">
+                        <a href="#tab-general" class="nav-tab nav-tab-active" data-tab="general"><?php _e( 'General', 'mailhook' ); ?></a>
+                        <a href="#tab-alerts" class="nav-tab" data-tab="alerts"><?php _e( 'Alerts', 'mailhook' ); ?></a>
+                    </nav>
+                </div>
 
-                    <!-- SMTP Server Section -->
-                    <div class="mailhook-card">
+                <!-- Settings Form -->
+                <form method="post" action="" class="mailhook-form" id="mailhook-settings-form">
+                    <?php wp_nonce_field( 'mailhook_save', 'mailhook_nonce' ); ?>
+                    
+                    <?php 
+                    $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'general'; 
+                    ?>
+                    <input type="hidden" name="active_tab" id="mailhook-active-tab" value="<?php echo esc_attr( $active_tab ); ?>">
+
+                    <!-- Tab: General -->
+                    <div id="tab-general" class="mailhook-tab-content mailhook-tab-active">
+                        <!-- SMTP Server Section -->
+                        <div class="mailhook-card">
                         <h2 class="mailhook-card-title"><?php _e( 'SMTP Server Configuration', 'mailhook' ); ?></h2>
 
                         <table class="form-table mailhook-table">
@@ -318,10 +354,75 @@ class MailHook_Settings {
                         <input type="submit" name="mailhook_save_settings" class="button button-primary button-hero"
                                value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
                     </p>
+                    
+                    </div><!-- /#tab-general -->
+
+                    <!-- Tab: Alerts -->
+                    <div id="tab-alerts" class="mailhook-tab-content" style="display:none;">
+                        
+                        <div class="mailhook-card">
+                            <h2 class="mailhook-card-title"><?php _e( 'Email Delivery Alerts', 'mailhook' ); ?></h2>
+                            <p><?php _e( 'Get notified when an email fails to send from your site. We\'ll send an alert with the error message and helpful links.', 'mailhook' ); ?></p>
+                            
+                            <table class="form-table mailhook-table">
+                                <tr>
+                                    <th><label for="alerts_enabled"><?php _e( 'Email Alerts', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <label class="mailhook-toggle">
+                                            <input type="hidden" name="alerts_enabled" value="0" />
+                                            <input type="checkbox" id="alerts_enabled" name="alerts_enabled" value="1"
+                                                <?php checked( $settings['alerts_enabled'], '1' ); ?> />
+                                            <span class="mailhook-toggle-slider"></span>
+                                            <span class="mailhook-toggle-label"><?php _e( 'Enable alerts for email sending failures', 'mailhook' ); ?></span>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label><?php _e( 'Send To', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <div id="mailhook-alert-emails-container">
+                                            <?php 
+                                            $emails = is_array( $settings['alert_emails'] ) ? $settings['alert_emails'] : array();
+                                            if ( empty( $emails ) ) {
+                                                $emails = array( '' ); // Ensure at least one input
+                                            }
+                                            foreach ( $emails as $index => $email ) : 
+                                            ?>
+                                                <div class="mailhook-alert-email-row" style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+                                                    <input type="email" name="alert_emails[]" value="<?php echo esc_attr( $email ); ?>" class="regular-text" placeholder="<?php esc_attr_e( 'Enter email address', 'mailhook' ); ?>" />
+                                                    <?php if ( count( $emails ) > 1 || $index > 0 ) : ?>
+                                                        <button type="button" class="button mailhook-remove-email-btn" title="<?php esc_attr_e( 'Remove this email', 'mailhook' ); ?>">&times;</button>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+                                        <p>
+                                            <button type="button" id="mailhook-add-email-btn" class="button" <?php echo count( $emails ) >= 3 ? 'style="display:none;"' : ''; ?>>
+                                                <?php _e( 'Add Another Email Address', 'mailhook' ); ?>
+                                            </button>
+                                        </p>
+                                        <p class="description"><?php _e( 'Enter the email addresses (3 max) you\'d like to use to receive alerts.', 'mailhook' ); ?></p>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+
+                        <p class="submit" style="display: flex; gap: 10px; align-items: center;">
+                            <input type="submit" name="mailhook_save_settings" class="button button-primary button-hero"
+                                   value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
+                            <button type="button" id="mailhook-test-alert" class="button button-secondary button-hero">
+                                <?php _e( 'Test Alert', 'mailhook' ); ?>
+                            </button>
+                            <span class="mailhook-test-alert-result" style="display:inline-block; margin-left: 10px;"></span>
+                        </p>
+
+                    </div><!-- /#tab-alerts -->
+
                 </form>
 
-                <!-- Test Email Section -->
-                <div class="mailhook-card mailhook-test-card">
+                <!-- Test Email Section (General Tab Only) -->
+                <div class="mailhook-card mailhook-test-card" id="mailhook-test-card-container">
                     <h2 class="mailhook-card-title"><?php _e( 'Send Test Email', 'mailhook' ); ?></h2>
                     <p><?php _e( 'Send a test email to verify your SMTP configuration is working correctly.', 'mailhook' ); ?></p>
 

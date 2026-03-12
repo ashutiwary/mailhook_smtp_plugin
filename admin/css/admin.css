@@ -38,6 +38,53 @@
     font-size: 14px;
 }
 
+/* ──────────── Tabs ──────────── */
+.mailhook-tabs-wrapper {
+    margin-bottom: 24px;
+}
+
+.mailhook-nav-tabs {
+    display: inline-flex;
+    gap: 8px;
+    padding: 6px;
+    margin: 0;
+    background: #f1f5f9;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.mailhook-nav-tabs .nav-tab {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    padding: 10px 24px;
+    background: transparent;
+    border: none !important;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    margin: 0 !important;
+    box-shadow: none !important;
+}
+
+.mailhook-nav-tabs .nav-tab:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.mailhook-nav-tabs .nav-tab:hover {
+    color: #1e293b;
+    background: #e2e8f0;
+}
+
+.mailhook-nav-tabs .nav-tab-active,
+.mailhook-nav-tabs .nav-tab-active:hover {
+    color: #0129ac;
+    font-weight: 600;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
 /* ──────────── Cards ──────────── */
 .mailhook-card {
     background: #fff;
@@ -241,17 +288,36 @@
     background: #0129ac !important;
     border-color: #011e80 !important;
     color: #fff !important;
-    font-size: 15px;
-    padding: 12px 32px !important;
-    border-radius: 10px !important;
-    box-shadow: 0 4px 14px rgba(1, 41, 172, 0.35) !important;
+    font-size: 14px;
+    padding: 0 24px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 14px rgba(1, 41, 172, 0.25) !important;
     transition: all 0.2s ease;
+    height: 40px !important;
+    min-height: 40px !important;
+    line-height: normal !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .mailhook-form .button-hero:hover {
     background: #011e80 !important;
-    box-shadow: 0 6px 20px rgba(1, 41, 172, 0.45) !important;
+    box-shadow: 0 6px 16px rgba(1, 41, 172, 0.35) !important;
     transform: translateY(-1px);
+}
+
+.mailhook-form .button-secondary.button-hero {
+    background: #fff !important;
+    color: #0129ac !important;
+    border: 1px solid #0129ac !important;
+    box-shadow: 0 2px 8px rgba(1, 41, 172, 0.1) !important;
+}
+
+.mailhook-form .button-secondary.button-hero:hover {
+    background: #f0f4ff !important;
+    box-shadow: 0 4px 12px rgba(1, 41, 172, 0.15) !important;
 }
 
 /* ──────────── Footer ──────────── */

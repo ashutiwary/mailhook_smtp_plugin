@@ -34,6 +34,7 @@ require_once MAILHOOK_ADMIN_DIR    . 'class-templates.php';
 require_once MAILHOOK_ADMIN_DIR    . 'class-test-mail.php';
 require_once MAILHOOK_ADMIN_DIR    . 'class-logger.php';
 require_once MAILHOOK_ADMIN_DIR    . 'class-email-report.php';
+require_once MAILHOOK_INCLUDES_DIR . 'class-alerts.php';
 
 /**
  * Initialize the plugin on plugins_loaded.
@@ -55,6 +56,9 @@ function mailhook_init() {
 
     // Initialize email logger (always — captures all wp_mail events)
     new MailHook_Logger();
+
+    // Initialize email alerts (always — listens for wp_mail_failed)
+    new MailHook_Alerts();
 }
 add_action( 'plugins_loaded', 'mailhook_init' );
 
