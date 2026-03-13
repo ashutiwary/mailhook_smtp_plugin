@@ -14,7 +14,7 @@
     color: #fff;
     padding: 28px 32px;
     border-radius: 12px;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
     box-shadow: 0 4px 20px rgba(1, 41, 172, 0.3);
 }
 
@@ -40,11 +40,11 @@
 
 /* ──────────── Tabs ──────────── */
 .mailhook-tabs-wrapper {
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 }
 
 .mailhook-nav-tabs {
-    display: inline-flex;
+    display: flex; width: 100%; box-sizing: border-box;
     gap: 8px;
     padding: 6px;
     margin: 0;
@@ -57,7 +57,7 @@
     font-size: 14px;
     font-weight: 500;
     color: #64748b;
-    padding: 10px 24px;
+    padding: 10px 12px; flex: 1; text-align: center;
     background: transparent;
     border: none !important;
     border-radius: 8px;
@@ -372,7 +372,7 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 }
 
 .mailhook-stat-card {
@@ -726,7 +726,7 @@
 }
 
 .mailhook-page-btn {
-    display: inline-flex;
+    display: flex; width: 100%; box-sizing: border-box;
     align-items: center;
     justify-content: center;
     min-width: 34px;
@@ -1460,7 +1460,7 @@
     cursor: pointer;
     color: #64748b;
     line-height: 1;
-    display: inline-flex;
+    display: flex; width: 100%; box-sizing: border-box;
     align-items: center;
     justify-content: center;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
