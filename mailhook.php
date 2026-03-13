@@ -37,6 +37,7 @@ require_once MAILHOOK_ADMIN_DIR    . 'class-email-report.php';
 require_once MAILHOOK_INCLUDES_DIR . 'class-alerts.php';
 require_once MAILHOOK_INCLUDES_DIR . 'class-backup.php';
 require_once MAILHOOK_INCLUDES_DIR . 'class-routing.php';
+require_once MAILHOOK_INCLUDES_DIR . 'class-controls.php';
 
 /**
  * Initialize the plugin on plugins_loaded.
@@ -65,6 +66,9 @@ function mailhook_init() {
 
     // Initialize backup handler (always — listens for wp_mail_failed)
     new MailHook_Backup();
+
+    // Initialize email controls (always — blocks specific core emails)
+    new MailHook_Controls();
 }
 add_action( 'plugins_loaded', 'mailhook_init' );
 

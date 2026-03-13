@@ -893,4 +893,14 @@
     }
 
 
+    /* Toggle Button Label Text Change */
+    document.addEventListener('change', function (e) {
+        if (e.target && e.target.closest('.mailhook-toggle') && e.target.type === 'checkbox') {
+            const label = e.target.closest('.mailhook-toggle').querySelector('.mailhook-toggle-label');
+            if (label) {
+                label.textContent = e.target.checked ? (data.on || 'ON') : (data.off || 'OFF');
+            }
+        }
+    });
+
 }());

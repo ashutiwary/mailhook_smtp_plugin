@@ -103,6 +103,8 @@ class MailHook_Settings {
                 'logDeleted'      => __( 'Logs deleted.', 'mailhook' ),
                 'confirmDeleteConn' => __( 'Are you sure you want to remove this connection?', 'mailhook' ),
                 'confirmDeleteRule' => __( 'Are you sure you want to remove this routing rule?', 'mailhook' ),
+                'on'              => __( 'ON', 'mailhook' ),
+                'off'             => __( 'OFF', 'mailhook' ),
             )
         );
     }
@@ -245,6 +247,15 @@ class MailHook_Settings {
             }
         }
         $settings['routing_rules'] = $routing_rules;
+        
+        // Email Controls
+        $controls = array();
+        if ( isset( $_POST['controls'] ) && is_array( $_POST['controls'] ) ) {
+            foreach ( $_POST['controls'] as $key => $value ) {
+                $controls[ sanitize_key( $key ) ] = sanitize_text_field( $value );
+            }
+        }
+        $settings['controls'] = $controls;
 
         update_option( self::OPTION_KEY, $settings );
 
@@ -294,6 +305,7 @@ class MailHook_Settings {
             'from_name'       => get_bloginfo( 'name' ),
             'alerts_enabled'  => '0',
             'alert_emails'    => array( get_option( 'admin_email' ) ),
+            'controls'        => array(), // Default: all emails enabled (empty array means no blocks)
         );
         $settings = wp_parse_args( $settings, $defaults );
 
@@ -322,6 +334,7 @@ class MailHook_Settings {
                         <a href="#tab-alerts" class="nav-tab" data-tab="alerts"><?php _e( 'Alerts', 'mailhook' ); ?></a>
                         <a href="#tab-additional" class="nav-tab" data-tab="additional"><?php _e( 'Additional Connections', 'mailhook' ); ?></a>
                         <a href="#tab-routing" class="nav-tab" data-tab="routing"><?php _e( 'Smart Routing', 'mailhook' ); ?></a>
+                        <a href="#tab-controls" class="nav-tab" data-tab="controls"><?php _e( 'Email Controls', 'mailhook' ); ?></a>
                     </nav>
                 </div>
 
@@ -635,6 +648,16 @@ class MailHook_Settings {
 
                     </div><!-- /#tab-routing -->
 
+                    <!-- Tab: Email Controls -->
+                    <div id="tab-controls" class="mailhook-tab-content" style="display:none;">
+                        <?php $this->render_controls_tab( $settings['controls'] ); ?>
+                        
+                        <p class="submit">
+                            <input type="submit" name="mailhook_save_settings" class="button button-primary button-hero"
+                                   value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
+                        </p>
+                    </div><!-- /#tab-controls -->
+
                 </form>
 
                 <!-- Test Email Section (General Tab Only) -->
@@ -904,5 +927,144 @@ class MailHook_Settings {
             </div>
         </div>
         <?php
+    }
+
+    /**
+     * Render the Email Controls tab content.
+     *
+     * @param array $controls The saved control settings.
+     */
+    private function render_controls_tab( $controls ) {
+        $sections = array(
+            'comments' => array(
+                'title' => __( 'Comments', 'mailhook' ),
+                'fields' => array(
+                    'comments_awaiting_moderation' => array(
+                        'label' => __( 'Awaiting Moderation', 'mailhook' ),
+                        'desc'  => __( 'Sent to site admin and post author when a comment needs approval.', 'mailhook' ),
+                    ),
+                    'comments_published' => array(
+                        'label' => __( 'Published', 'mailhook' ),
+                        'desc'  => __( 'Sent to the post author when a comment is approved and published.', 'mailhook' ),
+                    ),
+                ),
+            ),
+            'admin_email' => array(
+                'title' => __( 'Change of Admin Email', 'mailhook' ),
+                'fields' => array(
+                    'admin_email_change_attempt' => array(
+                        'label' => __( 'Site Admin Email Change Attempt', 'mailhook' ),
+                        'desc'  => __( 'Change of site admin email address was attempted. Sent to the proposed new email address.', 'mailhook' ),
+                    ),
+                    'admin_email_changed' => array(
+                        'label' => __( 'Site Admin Email Changed', 'mailhook' ),
+                        'desc'  => __( 'Site admin email address was changed. Sent to the old site admin email address.', 'mailhook' ),
+                    ),
+                ),
+            ),
+            'user_email_pass' => array(
+                'title' => __( 'Change of User Email or Password', 'mailhook' ),
+                'fields' => array(
+                    'user_reset_password_request' => array(
+                        'label' => __( 'Reset Password Request', 'mailhook' ),
+                        'desc'  => __( 'Sent to a user when they request to reset their account password.', 'mailhook' ),
+                    ),
+                    'user_reset_password_success' => array(
+                        'label' => __( 'Password Reset Successfully', 'mailhook' ),
+                        'desc'  => __( 'Sent to the site admin after a user successfully resets their password.', 'mailhook' ),
+                    ),
+                    'user_password_changed' => array(
+                        'label' => __( 'Password Changed', 'mailhook' ),
+                        'desc'  => __( 'Sent to a user after they have successfully changed their password.', 'mailhook' ),
+                    ),
+                    'user_email_change_attempt' => array(
+                        'label' => __( 'Email Change Attempt', 'mailhook' ),
+                        'desc'  => __( 'Sent to the new email address when a user attempts to change their email.', 'mailhook' ),
+                    ),
+                    'user_email_changed' => array(
+                        'label' => __( 'Email Changed', 'mailhook' ),
+                        'desc'  => __( 'Sent to a user after their email address has been successfully changed.', 'mailhook' ),
+                    ),
+                ),
+            ),
+            'personal_data' => array(
+                'title' => __( 'Personal Data Requests', 'mailhook' ),
+                'fields' => array(
+                    'privacy_export_erasure_request' => array(
+                        'label' => __( 'Export Request / Erasure Request', 'mailhook' ),
+                        'desc'  => __( 'Sent to a user to confirm their request to export or erase personal data.', 'mailhook' ),
+                    ),
+                    'privacy_admin_erased_data' => array(
+                        'label' => __( 'Admin Erased Data', 'mailhook' ),
+                        'desc'  => __( 'Sent to a user when their personal data has been erased by the admin.', 'mailhook' ),
+                    ),
+                    'privacy_admin_sent_export_link' => array(
+                        'label' => __( 'Admin Sent Link to Export Data', 'mailhook' ),
+                        'desc'  => __( 'Sent to a user with a secure link to download their exported personal data.', 'mailhook' ),
+                    ),
+                ),
+            ),
+            'updates' => array(
+                'title' => __( 'Automatic Updates', 'mailhook' ),
+                'fields' => array(
+                    'updates_plugin_status' => array(
+                        'label' => __( 'Plugin Status', 'mailhook' ),
+                        'desc'  => __( 'Sent after an automatic plugin update has completed or failed.', 'mailhook' ),
+                    ),
+                    'updates_theme_status' => array(
+                        'label' => __( 'Theme Status', 'mailhook' ),
+                        'desc'  => __( 'Sent after an automatic theme update has completed or failed.', 'mailhook' ),
+                    ),
+                    'updates_core_status' => array(
+                        'label' => __( 'WordPress Core Status', 'mailhook' ),
+                        'desc'  => __( 'Sent after an automatic WordPress core update has completed or failed.', 'mailhook' ),
+                    ),
+                    'updates_full_log' => array(
+                        'label' => __( 'Full Log', 'mailhook' ),
+                        'desc'  => __( 'Sent to provide a full report on all background update activities.', 'mailhook' ),
+                    ),
+                ),
+            ),
+            'new_user' => array(
+                'title' => __( 'New User', 'mailhook' ),
+                'fields' => array(
+                    'new_user_admin_notification' => array(
+                        'label' => __( 'New User (Admin Notification)', 'mailhook' ),
+                        'desc'  => __( 'Sent to the site admin when a new user registers on the website.', 'mailhook' ),
+                    ),
+                    'new_user_user_notification' => array(
+                        'label' => __( 'New User (User Notification)', 'mailhook' ),
+                        'desc'  => __( 'Sent to a new user with their registration details and login link.', 'mailhook' ),
+                    ),
+                ),
+            ),
+        );
+
+        foreach ( $sections as $section_id => $section ) : ?>
+            <div class="mailhook-card mailhook-controls-section">
+                <h2 class="mailhook-card-title"><?php echo esc_html( $section['title'] ); ?></h2>
+                <table class="form-table mailhook-table">
+                    <?php foreach ( $section['fields'] as $field_id => $field_data ) : 
+                        $is_checked = isset( $controls[ $field_id ] ) ? $controls[ $field_id ] === '1' : true; // Default to checked (ON)
+                        ?>
+                        <tr>
+                            <th><?php echo esc_html( $field_data['label'] ); ?></th>
+                            <td>
+                                <div class="mailhook-control-item">
+                                    <label class="mailhook-toggle">
+                                        <input type="hidden" name="controls[<?php echo esc_attr( $field_id ); ?>]" value="0" />
+                                        <input type="checkbox" name="controls[<?php echo esc_attr( $field_id ); ?>]" value="1"
+                                            <?php checked( $is_checked ); ?> />
+                                        <span class="mailhook-toggle-slider"></span>
+                                        <span class="mailhook-toggle-label"><?php echo $is_checked ? __( 'ON', 'mailhook' ) : __( 'OFF', 'mailhook' ); ?></span>
+                                    </label>
+                                    <span class="mailhook-control-description"><?php echo esc_html( $field_data['desc'] ); ?></span>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+            </div>
+        <?php endforeach;
     }
 }
