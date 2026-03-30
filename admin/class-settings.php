@@ -692,7 +692,7 @@ class MailHook_Settings {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr class="mailhook-spam-dependent" style="<?php echo $settings['enable_spam_protection'] === '1' ? '' : 'display: none;'; ?>">
                                     <th><label for="spam_require_math"><?php _e( 'Require Math Challenge', 'mailhook' ); ?></label></th>
                                     <td>
                                         <div class="mailhook-control-item" style="display: flex; align-items: center; gap: 15px;">
@@ -707,7 +707,7 @@ class MailHook_Settings {
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr class="mailhook-spam-dependent" style="<?php echo $settings['enable_spam_protection'] === '1' ? '' : 'display: none;'; ?>">
                                     <th><label for="spam_block_duration"><?php _e( 'Block Duration', 'mailhook' ); ?></label></th>
                                     <td>
                                         <input type="number" id="spam_block_duration" name="spam_block_duration"
@@ -716,7 +716,7 @@ class MailHook_Settings {
                                         <span class="description"><?php _e( 'minutes. (If a user submits a form, block them for this many minutes unless they verify they are human).', 'mailhook' ); ?></span>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr class="mailhook-spam-dependent" style="<?php echo $settings['enable_spam_protection'] === '1' ? '' : 'display: none;'; ?>">
                                     <th><label for="spam_warning_message"><?php _e( 'Popup Warning Message', 'mailhook' ); ?></label></th>
                                     <td>
                                         <textarea id="spam_warning_message" name="spam_warning_message" rows="3" class="large-text"><?php echo esc_textarea( $settings['spam_warning_message'] ); ?></textarea>

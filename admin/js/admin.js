@@ -902,5 +902,15 @@
             }
         }
     });
+    /* Toggle Spam Protection Dependent Fields */
+    const spamProtectionToggle = document.getElementById('enable_spam_protection');
+    if (spamProtectionToggle) {
+        spamProtectionToggle.addEventListener('change', function () {
+            const dependentRows = document.querySelectorAll('.mailhook-spam-dependent');
+            dependentRows.forEach(row => {
+                row.style.display = spamProtectionToggle.checked ? '' : 'none';
+            });
+        });
+    }
 
 }());
