@@ -1,0 +1,151 @@
+/* 
+ * MailHook Spam Protection Styles
+ * Modern, clean, glassmorphism modal design
+ */
+
+.mailhook-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    animation: mailhookFadeIn 0.3s forwards ease-out;
+}
+
+.mailhook-modal-content {
+    background: #ffffff;
+    width: 90%;
+    max-width: 420px;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0,0,0,0.05);
+    text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    transform: translateY(20px);
+    opacity: 0;
+    animation: mailhookSlideUp 0.4s 0.1s forwards cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mailhook-modal-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.mailhook-modal-title {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.mailhook-modal-desc {
+    margin: 0 0 24px 0;
+    font-size: 15px;
+    color: #475569;
+    line-height: 1.5;
+}
+
+.mailhook-challenge {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: border-color 0.2s;
+}
+
+.mailhook-challenge:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.mailhook-challenge label {
+    font-size: 16px;
+    color: #1e293b;
+    margin: 0;
+}
+
+.mailhook-challenge input {
+    width: 80px;
+    padding: 8px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    color: #0f172a;
+    transition: all 0.2s;
+}
+
+.mailhook-challenge input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.mailhook-modal-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.mailhook-modal-actions button {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mailhook-btn-primary {
+    background: #3b82f6;
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+}
+
+.mailhook-btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.3);
+}
+
+.mailhook-btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.mailhook-btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.mailhook-btn-secondary:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+/* Animations */
+@keyframes mailhookFadeIn {
+    to { opacity: 1; }
+}
+
+@keyframes mailhookSlideUp {
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

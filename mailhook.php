@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'MAILHOOK_VERSION',      '1.0.0' );
+define( 'MAILHOOK_VERSION',      '1.0.3' );
 define( 'MAILHOOK_PLUGIN_DIR',   plugin_dir_path( __FILE__ ) );
 define( 'MAILHOOK_PLUGIN_URL',   plugin_dir_url( __FILE__ ) );
 define( 'MAILHOOK_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -38,6 +38,7 @@ require_once MAILHOOK_INCLUDES_DIR . 'class-alerts.php';
 require_once MAILHOOK_INCLUDES_DIR . 'class-backup.php';
 require_once MAILHOOK_INCLUDES_DIR . 'class-routing.php';
 require_once MAILHOOK_INCLUDES_DIR . 'class-controls.php';
+require_once MAILHOOK_INCLUDES_DIR . 'class-spam-protection.php';
 
 /**
  * Initialize the plugin on plugins_loaded.
@@ -69,6 +70,9 @@ function mailhook_init() {
 
     // Initialize email controls (always — blocks specific core emails)
     new MailHook_Controls();
+
+    // Initialize spam protection (always - tracks IPs and rate limits forms)
+    new MailHook_Spam_Protection();
 }
 add_action( 'plugins_loaded', 'mailhook_init' );
 

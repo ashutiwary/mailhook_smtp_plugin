@@ -257,6 +257,12 @@ class MailHook_Settings {
         }
         $settings['controls'] = $controls;
 
+        // Form Spam Protection
+        $settings['enable_spam_protection'] = sanitize_text_field( $_POST['enable_spam_protection'] ?? '0' );
+        $settings['spam_require_math']      = sanitize_text_field( $_POST['spam_require_math'] ?? '0' );
+        $settings['spam_block_duration']    = max( 1, absint( $_POST['spam_block_duration'] ?? 5 ) );
+        $settings['spam_warning_message']   = sanitize_textarea_field( wp_unslash( $_POST['spam_warning_message'] ?? '' ) );
+
         update_option( self::OPTION_KEY, $settings );
 
         $redirect_args = array(
@@ -306,6 +312,10 @@ class MailHook_Settings {
             'alerts_enabled'  => '0',
             'alert_emails'    => array( get_option( 'admin_email' ) ),
             'controls'        => array(), // Default: all emails enabled (empty array means no blocks)
+            'enable_spam_protection' => '0',
+            'spam_require_math'      => '1',
+            'spam_block_duration'    => '5',
+            'spam_warning_message'   => __( 'We detected multiple form submissions. Please verify you want to submit again.', 'mailhook' ),
         );
         $settings = wp_parse_args( $settings, $defaults );
 
@@ -335,6 +345,7 @@ class MailHook_Settings {
                         <a href="#tab-additional" class="nav-tab" data-tab="additional"><?php _e( 'Additional Connections', 'mailhook' ); ?></a>
                         <a href="#tab-routing" class="nav-tab" data-tab="routing"><?php _e( 'Smart Routing', 'mailhook' ); ?></a>
                         <a href="#tab-controls" class="nav-tab" data-tab="controls"><?php _e( 'Email Controls', 'mailhook' ); ?></a>
+                        <a href="#tab-spam" class="nav-tab" data-tab="spam"><?php _e( 'Spam Protection', 'mailhook' ); ?></a>
                     </nav>
                 </div>
 
@@ -657,6 +668,69 @@ class MailHook_Settings {
                                    value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
                         </p>
                     </div><!-- /#tab-controls -->
+
+                    <!-- Tab: Spam Protection -->
+                    <div id="tab-spam" class="mailhook-tab-content" style="display:none;">
+                        
+                        <div class="mailhook-card">
+                            <h2 class="mailhook-card-title"><?php _e( 'Form Spam & Rate Limiting', 'mailhook' ); ?></h2>
+                            <p><?php _e( 'Prevent bot spam by blocking IP addresses that submit too many forms across your website. Works with any form plugin (Elementor, CF7, WPForms, etc.).', 'mailhook' ); ?></p>
+                            
+                            <table class="form-table mailhook-table">
+                                <tr>
+                                    <th><label for="enable_spam_protection"><?php _e( 'Enable Protection', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <div class="mailhook-control-item" style="display: flex; align-items: center; gap: 15px;">
+                                            <label class="mailhook-toggle">
+                                                <input type="hidden" name="enable_spam_protection" value="0" />
+                                                <input type="checkbox" id="enable_spam_protection" name="enable_spam_protection" value="1"
+                                                    <?php checked( $settings['enable_spam_protection'], '1' ); ?> />
+                                                <span class="mailhook-toggle-slider"></span>
+                                                <span class="mailhook-toggle-label"><?php echo $settings['enable_spam_protection'] === '1' ? __( 'ON', 'mailhook' ) : __( 'OFF', 'mailhook' ); ?></span>
+                                            </label>
+                                            <span class="mailhook-control-description"><?php _e( 'Enable Form Rate Limiting', 'mailhook' ); ?></span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="spam_require_math"><?php _e( 'Require Math Challenge', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <div class="mailhook-control-item" style="display: flex; align-items: center; gap: 15px;">
+                                            <label class="mailhook-toggle">
+                                                <input type="hidden" name="spam_require_math" value="0" />
+                                                <input type="checkbox" id="spam_require_math" name="spam_require_math" value="1"
+                                                    <?php checked( $settings['spam_require_math'], '1' ); ?> />
+                                                <span class="mailhook-toggle-slider"></span>
+                                                <span class="mailhook-toggle-label"><?php echo $settings['spam_require_math'] === '1' ? __( 'ON', 'mailhook' ) : __( 'OFF', 'mailhook' ); ?></span>
+                                            </label>
+                                            <span class="mailhook-control-description"><?php _e( 'Show a simple math captcha (e.g. 5 + 3 = ?) to verify users.', 'mailhook' ); ?></span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="spam_block_duration"><?php _e( 'Block Duration', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <input type="number" id="spam_block_duration" name="spam_block_duration"
+                                               value="<?php echo esc_attr( $settings['spam_block_duration'] ); ?>"
+                                               class="small-text" min="1" max="1440" />
+                                        <span class="description"><?php _e( 'minutes. (If a user submits a form, block them for this many minutes unless they verify they are human).', 'mailhook' ); ?></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="spam_warning_message"><?php _e( 'Popup Warning Message', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <textarea id="spam_warning_message" name="spam_warning_message" rows="3" class="large-text"><?php echo esc_textarea( $settings['spam_warning_message'] ); ?></textarea>
+                                        <p class="description"><?php _e( 'This message is shown in the popup when a rate-limited user tries to submit another form.', 'mailhook' ); ?></p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <p class="submit">
+                            <input type="submit" name="mailhook_save_settings" class="button button-primary button-hero"
+                                   value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
+                        </p>
+                    </div><!-- /#tab-spam -->
 
                 </form>
 

@@ -44,6 +44,33 @@ class MailHook_Mailer {
 
         // Apply HTML Templates (run early but after logger)
         add_filter( 'wp_mail', array( $this, 'apply_template' ), 10 );
+
+        // Pre-flight spam check
+        add_filter( 'pre_wp_mail', array( $this, 'pre_flight_spam_check' ), 10, 2 );
+    }
+
+    /**
+     * Pre-flight spam protection check.
+     * Block the email if the user's IP is currently rate-limited.
+     *
+     * @param null|bool   $null
+     * @param array       $atts
+     * @return null|bool
+     */
+    public function pre_flight_spam_check( $null, $atts ) {
+        if ( class_exists( 'MailHook_Spam_Protection' ) && MailHook_Spam_Protection::is_enabled() ) {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+            if ( ! empty( $ip ) ) {
+                if ( MailHook_Spam_Protection::is_ip_blocked( $ip ) ) {
+                    // Short-circuit wp_mail(), return false simulating failure
+                    return false;
+                } else {
+                    // Not blocked, start the 5-minute timeout countdown
+                    MailHook_Spam_Protection::record_ip( $ip );
+                }
+            }
+        }
+        return $null; // Proceed normally
     }
 
     /**
