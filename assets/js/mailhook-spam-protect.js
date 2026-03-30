@@ -2,6 +2,7 @@
  * MailHook Spam Protection
  * Prevents multiple form submissions from the same browser/IP
  * within a defined timeframe without human verification.
+ * Also handles permanent IP blocks and keyword blocks.
  */
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof mailhookSpamVars === 'undefined') return;
@@ -10,6 +11,39 @@ document.addEventListener('DOMContentLoaded', function() {
     var warningMsg    = mailhookSpamVars.message;
     var restUrl       = mailhookSpamVars.rest_url;
     var restNonce     = mailhookSpamVars.nonce;
+
+    var isPermanentlyBlocked = mailhookSpamVars.is_permanently_blocked === true || mailhookSpamVars.is_permanently_blocked === '1';
+    var blockedKeywords = Array.isArray(mailhookSpamVars.blocked_keywords) ? mailhookSpamVars.blocked_keywords : [];
+    var ipMessage = mailhookSpamVars.ip_message;
+    var kwMessage = mailhookSpamVars.kw_message;
+
+    /**
+     * Helper to show a hard-block modal (No verification possible)
+     */
+    function showHardBlockModal(message) {
+        if (document.getElementById('mailhook-spam-modal')) return;
+
+        var modalHtml = `
+            <div id="mailhook-spam-modal" class="mailhook-modal-overlay">
+                <div class="mailhook-modal-content">
+                    <div class="mailhook-modal-icon">🚫</div>
+                    <h3 class="mailhook-modal-title">Submission Blocked</h3>
+                    <p class="mailhook-modal-desc">${message}</p>
+                    <div class="mailhook-modal-actions">
+                        <button type="button" id="mailhook-cancel-btn" class="mailhook-btn-secondary">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        var modal     = document.getElementById('mailhook-spam-modal');
+        var cancelBtn = document.getElementById('mailhook-cancel-btn');
+
+        cancelBtn.addEventListener('click', function() {
+            modal.remove();
+        });
+    }
 
     /**
      * Helper to show the verification modal
@@ -98,11 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // Re-trigger the form submission safely
                     if (originalTarget && typeof originalTarget.submit === 'function' && originalTarget.nodeName === 'FORM') {
-                        // Mark it so it bypasses our listener
                         originalTarget.dataset.mailhookVerified = '1';
-                        
-                        // For elementor/CF7 forms, we might need to actually dispatch a submit event instead of form.submit()
-                        // because they rely on JS capturing the submit event to do AJAX.
                         var evt = new Event('submit', { cancelable: true, bubbles: true });
                         originalTarget.dispatchEvent(evt);
                     }
@@ -128,25 +158,53 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Skip if this form was already verified
         if (target.dataset.mailhookVerified === '1') {
-            // Remove the flag for next time it's submitted
             target.removeAttribute('data-mailhook-verified');
-            // Allow submission to proceed normally
-            // Record the new submit time for the next 5 minutes
             localStorage.setItem('mailhook_last_submit', Date.now().toString());
             return;
         }
 
+        // 1. Check Permanent IP Block
+        if (isPermanentlyBlocked) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            showHardBlockModal(ipMessage);
+            return;
+        }
+
+        // 2. Check Keyword Block
+        if (blockedKeywords.length > 0) {
+            // Gather all text from inputs and textareas
+            var fields = target.querySelectorAll('input[type="text"], input[type="email"], textarea');
+            var fullText = '';
+            fields.forEach(function(field) {
+                fullText += ' ' + field.value.toLowerCase();
+            });
+
+            var keywordFound = false;
+            for (var i = 0; i < blockedKeywords.length; i++) {
+                if (fullText.indexOf(blockedKeywords[i]) !== -1) {
+                    keywordFound = true;
+                    break;
+                }
+            }
+
+            if (keywordFound) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                showHardBlockModal(kwMessage);
+                return;
+            }
+        }
+
+        // 3. Check Rate Limit
         var lastSubmitStr = localStorage.getItem('mailhook_last_submit');
         if (lastSubmitStr) {
             var lastSubmit = parseInt(lastSubmitStr, 10);
             var now = Date.now();
 
             if (now - lastSubmit < blockDuration) {
-                // Rate limited: Stop submission
                 e.preventDefault();
                 e.stopImmediatePropagation();
-
-                // Show verification modal
                 showVerificationModal(target);
                 return;
             }
@@ -154,7 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Allow first submission through
         localStorage.setItem('mailhook_last_submit', Date.now().toString());
-        // Form submits normally...
 
     }, true); // use capturing phase to guarantee we intercept before 3rd party plugins!
 

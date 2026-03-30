@@ -19,11 +19,23 @@ class MailHook_Spam_Protection {
     }
 
     /**
-     * Check if spam protection is enabled.
+     * Check if form rate limiting is enabled.
      */
-    public static function is_enabled() {
+    public static function is_rate_limit_enabled() {
         $settings = get_option( 'mailhook_settings', array() );
         return ! empty( $settings['enable_spam_protection'] );
+    }
+
+    /**
+     * Check if ANY form protection (rate limit, IP block, Keyword block) is active.
+     */
+    public static function is_any_protection_enabled() {
+        $settings = get_option( 'mailhook_settings', array() );
+        return ( 
+            ! empty( $settings['enable_spam_protection'] ) || 
+            ! empty( $settings['spam_blocked_ips'] ) || 
+            ! empty( $settings['spam_blocked_keywords'] )
+        );
     }
 
     /**
@@ -35,10 +47,56 @@ class MailHook_Spam_Protection {
     }
 
     /**
+     * Get array of permanently blocked IPs.
+     */
+    public static function get_blocked_ips() {
+        $settings = get_option( 'mailhook_settings', array() );
+        if ( empty( $settings['spam_blocked_ips'] ) ) {
+            return array();
+        }
+        $ips_raw = explode( ',', $settings['spam_blocked_ips'] );
+        return array_filter( array_map( 'trim', $ips_raw ) );
+    }
+
+    /**
+     * Get array of blocked keywords.
+     */
+    public static function get_blocked_keywords() {
+        $settings = get_option( 'mailhook_settings', array() );
+        if ( empty( $settings['spam_blocked_keywords'] ) ) {
+            return array();
+        }
+        $keywords_raw = explode( ',', $settings['spam_blocked_keywords'] );
+        return array_filter( array_map( 'strtolower', array_map( 'trim', $keywords_raw ) ) );
+    }
+
+    /**
+     * Get the user's IP address, accounting for reverse proxies.
+     */
+    public static function get_user_ip() {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+            $proxies = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] );
+            $ip = trim( current( $proxies ) );
+        } elseif ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        }
+        return $ip;
+    }
+
+    /**
+     * Check if the current IP is permanently blocked.
+     */
+    public static function is_permanently_blocked_ip( $ip ) {
+        $blocked_ips = self::get_blocked_ips();
+        return in_array( trim( $ip ), $blocked_ips, true );
+    }
+
+    /**
      * Check if the current IP is blocked from sending emails.
      */
     public static function is_ip_blocked( $ip ) {
-        if ( ! self::is_enabled() ) {
+        if ( ! self::is_rate_limit_enabled() ) {
             return false;
         }
 
@@ -52,7 +110,7 @@ class MailHook_Spam_Protection {
      * Record a form submission (email sent) for the IP.
      */
     public static function record_ip( $ip ) {
-        if ( ! self::is_enabled() ) {
+        if ( ! self::is_rate_limit_enabled() ) {
             return;
         }
 
@@ -75,7 +133,7 @@ class MailHook_Spam_Protection {
      * Enqueue the frontend javascript and CSS.
      */
     public function enqueue_scripts() {
-        if ( ! self::is_enabled() ) {
+        if ( ! self::is_any_protection_enabled() ) {
             return;
         }
 
@@ -84,13 +142,23 @@ class MailHook_Spam_Protection {
 
         $settings = get_option( 'mailhook_settings', array() );
         $message  = ! empty( $settings['spam_warning_message'] ) ? $settings['spam_warning_message'] : __( 'We detected multiple form submissions. Please verify you want to submit again.', 'mailhook' );
+        
+        $ip_message = ! empty( $settings['spam_block_ip_message'] ) ? $settings['spam_block_ip_message'] : __( 'Your IP address is not allowed to submit forms on this site.', 'mailhook' );
+        $kw_message = ! empty( $settings['spam_block_keyword_message'] ) ? $settings['spam_block_keyword_message'] : __( 'Your submission contains blocked content and cannot proceed.', 'mailhook' );
 
         wp_localize_script( 'mailhook-spam-protect', 'mailhookSpamVars', array(
             'rest_url'       => esc_url_raw( rest_url( 'mailhook/v1/verify-human' ) ),
             'nonce'          => wp_create_nonce( 'mailhook_verify_human' ),
             'require_math'   => isset( $settings['spam_require_math'] ) ? $settings['spam_require_math'] : '1',
-            'block_duration' => self::get_block_duration() * 60 * 1000, // milliseconds
+            'block_duration' => self::get_block_duration() * 60 * 1000,
             'message'        => wp_kses_post( $message ),
+            
+            // New Blocking Fields
+            'is_permanently_blocked' => self::is_permanently_blocked_ip( self::get_user_ip() ) ? '1' : '0',
+            'blocked_keywords'       => self::get_blocked_keywords(),
+            'ip_message'             => wp_kses_post( $ip_message ),
+            'kw_message'             => wp_kses_post( $kw_message ),
+            'user_ip'                => self::get_user_ip(),
         ) );
     }
 

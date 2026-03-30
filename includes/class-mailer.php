@@ -58,9 +58,30 @@ class MailHook_Mailer {
      * @return null|bool
      */
     public function pre_flight_spam_check( $null, $atts ) {
-        if ( class_exists( 'MailHook_Spam_Protection' ) && MailHook_Spam_Protection::is_enabled() ) {
-            $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-            if ( ! empty( $ip ) ) {
+        if ( class_exists( 'MailHook_Spam_Protection' ) && MailHook_Spam_Protection::is_any_protection_enabled() ) {
+            $user_ip = MailHook_Spam_Protection::get_user_ip();
+            if ( ! empty( $user_ip ) ) {
+                // 1. Permanent Global Blocks (Hard Block)
+                if ( MailHook_Spam_Protection::is_permanently_blocked_ip( $user_ip ) ) {
+                    return false;
+                }
+
+                // 2. Check Keyword Block
+                $blocked_keywords = MailHook_Spam_Protection::get_blocked_keywords();
+                if ( ! empty( $blocked_keywords ) && is_array( $atts ) ) {
+                    $subject = isset( $atts['subject'] ) ? $atts['subject'] : '';
+                    $message = isset( $atts['message'] ) ? $atts['message'] : '';
+                    // Strip tags just in case we are dealing with HTML payload, then lower it for scanning
+                    $full_text = strtolower( wp_strip_all_tags( $subject . ' ' . $message ) );
+                    
+                    foreach ( $blocked_keywords as $keyword ) {
+                        if (strpos( $full_text, $keyword ) !== false) {
+                            return false;
+                        }
+                    }
+                }
+
+                // 3. Check Rate Limit
                 if ( MailHook_Spam_Protection::is_ip_blocked( $ip ) ) {
                     // Short-circuit wp_mail(), return false simulating failure
                     return false;

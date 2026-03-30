@@ -262,6 +262,10 @@ class MailHook_Settings {
         $settings['spam_require_math']      = sanitize_text_field( $_POST['spam_require_math'] ?? '0' );
         $settings['spam_block_duration']    = max( 1, absint( $_POST['spam_block_duration'] ?? 5 ) );
         $settings['spam_warning_message']   = sanitize_textarea_field( wp_unslash( $_POST['spam_warning_message'] ?? '' ) );
+        $settings['spam_blocked_ips']       = sanitize_textarea_field( wp_unslash( $_POST['spam_blocked_ips'] ?? '' ) );
+        $settings['spam_block_ip_message']  = sanitize_text_field( wp_unslash( $_POST['spam_block_ip_message'] ?? '' ) );
+        $settings['spam_blocked_keywords']  = sanitize_textarea_field( wp_unslash( $_POST['spam_blocked_keywords'] ?? '' ) );
+        $settings['spam_block_keyword_message'] = sanitize_text_field( wp_unslash( $_POST['spam_block_keyword_message'] ?? '' ) );
 
         update_option( self::OPTION_KEY, $settings );
 
@@ -316,6 +320,10 @@ class MailHook_Settings {
             'spam_require_math'      => '1',
             'spam_block_duration'    => '5',
             'spam_warning_message'   => __( 'We detected multiple form submissions. Please verify you want to submit again.', 'mailhook' ),
+            'spam_blocked_ips'       => '',
+            'spam_block_ip_message'  => __( 'Your IP address is not allowed to submit forms on this site.', 'mailhook' ),
+            'spam_blocked_keywords'  => '',
+            'spam_block_keyword_message' => __( 'Your submission contains blocked content and cannot proceed.', 'mailhook' ),
         );
         $settings = wp_parse_args( $settings, $defaults );
 
@@ -346,6 +354,7 @@ class MailHook_Settings {
                         <a href="#tab-routing" class="nav-tab" data-tab="routing"><?php _e( 'Smart Routing', 'mailhook' ); ?></a>
                         <a href="#tab-controls" class="nav-tab" data-tab="controls"><?php _e( 'Email Controls', 'mailhook' ); ?></a>
                         <a href="#tab-spam" class="nav-tab" data-tab="spam"><?php _e( 'Spam Protection', 'mailhook' ); ?></a>
+                        <a href="#tab-block" class="nav-tab" data-tab="block"><?php _e( 'Block IP & Keyword', 'mailhook' ); ?></a>
                     </nav>
                 </div>
 
@@ -731,6 +740,55 @@ class MailHook_Settings {
                                    value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
                         </p>
                     </div><!-- /#tab-spam -->
+
+                    <!-- Tab: Block IP & Keyword -->
+                    <div id="tab-block" class="mailhook-tab-content" style="display:none;">
+                        
+                        <div class="mailhook-card">
+                            <h2 class="mailhook-card-title"><?php _e( 'Block IP & Keyword', 'mailhook' ); ?></h2>
+                            <p><?php _e( 'Globally restrict specific IPs or keywords from submitting forms.', 'mailhook' ); ?></p>
+                            
+                            <table class="form-table mailhook-table">
+                                <tr>
+                                    <th><label for="spam_blocked_ips"><?php _e( 'Blocked IPs', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <textarea id="spam_blocked_ips" name="spam_blocked_ips" rows="3" class="large-text" placeholder="192.168.1.1, 10.0.0.1"><?php echo esc_textarea( $settings['spam_blocked_ips'] ); ?></textarea>
+                                        <p class="description"><?php _e( 'Enter IP addresses separated by commas. These IPs will be entirely blocked from submitting any form without a math challenge.', 'mailhook' ); ?></p>
+                                        <p class="description" style="margin-top: 5px; color: #d63638;">
+                                            <strong><?php _e( 'Your current IP address is:', 'mailhook' ); ?></strong>
+                                            <code><?php echo esc_html( MailHook_Spam_Protection::get_user_ip() ); ?></code>
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="spam_block_ip_message"><?php _e( 'Blocked IP Message', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <input type="text" id="spam_block_ip_message" name="spam_block_ip_message" value="<?php echo esc_attr( $settings['spam_block_ip_message'] ); ?>" class="large-text" />
+                                        <p class="description"><?php _e( 'This message is shown when a permanently blocked IP tries to submit a form.', 'mailhook' ); ?></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="spam_blocked_keywords"><?php _e( 'Blocked Keywords', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <textarea id="spam_blocked_keywords" name="spam_blocked_keywords" rows="3" class="large-text" placeholder="viagra, crypto, lottery"><?php echo esc_textarea( $settings['spam_blocked_keywords'] ); ?></textarea>
+                                        <p class="description"><?php _e( 'Enter keywords separated by commas. If a user submits a form containing any of these words in the text fields, they will be blocked.', 'mailhook' ); ?></p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label for="spam_block_keyword_message"><?php _e( 'Blocked Keyword Message', 'mailhook' ); ?></label></th>
+                                    <td>
+                                        <input type="text" id="spam_block_keyword_message" name="spam_block_keyword_message" value="<?php echo esc_attr( $settings['spam_block_keyword_message'] ); ?>" class="large-text" />
+                                        <p class="description"><?php _e( 'This message is shown when a user uses a blocked keyword.', 'mailhook' ); ?></p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        
+                        <p class="submit">
+                            <input type="submit" name="mailhook_save_settings" class="button button-primary button-hero"
+                                   value="<?php _e( 'Save Settings', 'mailhook' ); ?>" />
+                        </p>
+                    </div><!-- /#tab-block -->
 
                 </form>
 
