@@ -193,16 +193,16 @@
     /* ── Resend failed email ── */
     document.querySelectorAll('.mailhook-resend-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            var id    = btn.getAttribute('data-id');
+            var id = btn.getAttribute('data-id');
             var nonce = btn.getAttribute('data-nonce');
 
-            btn.disabled    = true;
+            btn.disabled = true;
             btn.textContent = 'Sending\u2026';
 
             var fd = new FormData();
             fd.append('action', 'mailhook_resend_email');
-            fd.append('nonce',  nonce);
-            fd.append('id',     id);
+            fd.append('nonce', nonce);
+            fd.append('id', id);
 
             fetch(data.ajaxurl, { method: 'POST', body: fd, credentials: 'same-origin' })
                 .then(function (r) { return r.json(); })
@@ -213,13 +213,13 @@
                         setTimeout(function () { window.location.reload(); }, 1800);
                     } else {
                         showToast(res.data || 'Failed to resend.', 'error');
-                        btn.disabled    = false;
+                        btn.disabled = false;
                         btn.textContent = 'Resend';
                     }
                 })
                 .catch(function (err) {
                     showToast('Request error: ' + err.message, 'error');
-                    btn.disabled    = false;
+                    btn.disabled = false;
                     btn.textContent = 'Resend';
                 });
         });
@@ -269,14 +269,14 @@
 
     if (tabs.length > 0) {
         tabs.forEach(tab => {
-            tab.addEventListener('click', function(e) {
+            tab.addEventListener('click', function (e) {
                 e.preventDefault();
                 const targetId = this.getAttribute('href').substring(1);
-                
+
                 // Update active tab link
                 tabs.forEach(t => t.classList.remove('nav-tab-active'));
                 this.classList.add('nav-tab-active');
-                
+
                 // Show target content, hide others
                 tabContents.forEach(content => {
                     content.style.display = content.id === targetId ? 'block' : 'none';
@@ -321,7 +321,7 @@
     function updateEmailButtons() {
         if (!emailsContainer) return;
         const rows = emailsContainer.querySelectorAll('.mailhook-alert-email-row');
-        
+
         // Hide "Add" button if max reached
         if (addEmailBtn) {
             addEmailBtn.style.display = rows.length >= maxEmails ? 'none' : 'inline-block';
@@ -331,7 +331,7 @@
         rows.forEach((row, index) => {
             let removeBtn = row.querySelector('.mailhook-remove-email-btn');
             if (rows.length === 1) {
-                if(removeBtn) removeBtn.remove();
+                if (removeBtn) removeBtn.remove();
             } else {
                 if (!removeBtn) {
                     removeBtn = document.createElement('button');
@@ -339,7 +339,7 @@
                     removeBtn.className = 'button mailhook-remove-email-btn';
                     removeBtn.title = 'Remove this email';
                     removeBtn.innerHTML = '&times;';
-                    removeBtn.addEventListener('click', function() {
+                    removeBtn.addEventListener('click', function () {
                         row.remove();
                         updateEmailButtons();
                     });
@@ -350,7 +350,7 @@
     }
 
     if (addEmailBtn && emailsContainer) {
-        addEmailBtn.addEventListener('click', function() {
+        addEmailBtn.addEventListener('click', function () {
             const rows = emailsContainer.querySelectorAll('.mailhook-alert-email-row');
             if (rows.length >= maxEmails) return;
 
@@ -358,13 +358,13 @@
             newRow.className = 'mailhook-alert-email-row';
             newRow.style.cssText = 'margin-bottom: 10px; display: flex; align-items: center; gap: 10px;';
             newRow.innerHTML = '<input type="email" name="alert_emails[]" value="" class="regular-text" placeholder="Enter email address" />';
-            
+
             emailsContainer.appendChild(newRow);
             updateEmailButtons();
         });
 
         // Attach events to existing remove buttons
-        emailsContainer.addEventListener('click', function(e) {
+        emailsContainer.addEventListener('click', function (e) {
             if (e.target.classList.contains('mailhook-remove-email-btn')) {
                 e.target.closest('.mailhook-alert-email-row').remove();
                 updateEmailButtons();
@@ -377,12 +377,12 @@
     /* Test Alert Button */
     const testAlertBtn = document.getElementById('mailhook-test-alert');
     if (testAlertBtn) {
-        testAlertBtn.addEventListener('click', function() {
+        testAlertBtn.addEventListener('click', function () {
             const resultSpan = document.querySelector('.mailhook-test-alert-result');
-            
+
             testAlertBtn.disabled = true;
             testAlertBtn.textContent = 'Sending...';
-            if(resultSpan) {
+            if (resultSpan) {
                 resultSpan.textContent = '';
                 resultSpan.className = 'mailhook-test-alert-result';
             }
@@ -396,25 +396,25 @@
                 body: fd,
                 credentials: 'same-origin'
             })
-            .then(function(r) { return r.json(); })
-            .then(function(res) {
-                if(resultSpan) {
-                    resultSpan.textContent = res.data;
-                    resultSpan.classList.add(res.success ? 'success' : 'error');
-                } else {
-                    showToast(res.data, res.success ? 'success' : 'error');
-                }
-            })
-            .catch(function(err) {
-                 if(resultSpan) {
-                    resultSpan.textContent = 'Request failed: ' + err.message;
-                    resultSpan.classList.add('error');
-                }
-            })
-            .finally(function() {
-                testAlertBtn.disabled = false;
-                testAlertBtn.textContent = 'Test Alert';
-            });
+                .then(function (r) { return r.json(); })
+                .then(function (res) {
+                    if (resultSpan) {
+                        resultSpan.textContent = res.data;
+                        resultSpan.classList.add(res.success ? 'success' : 'error');
+                    } else {
+                        showToast(res.data, res.success ? 'success' : 'error');
+                    }
+                })
+                .catch(function (err) {
+                    if (resultSpan) {
+                        resultSpan.textContent = 'Request failed: ' + err.message;
+                        resultSpan.classList.add('error');
+                    }
+                })
+                .finally(function () {
+                    testAlertBtn.disabled = false;
+                    testAlertBtn.textContent = 'Test Alert';
+                });
         });
     }
 
@@ -427,20 +427,20 @@
 
     function updateBackupSelectOptions() {
         if (!backupSelect || !connectionsContainer) return;
-        
+
         // Save current selection to restore if possible
         const currentVal = backupSelect.value;
         const rows = connectionsContainer.querySelectorAll('.mailhook-connection-row');
-        
+
         // Reset options to just "None"
         backupSelect.innerHTML = '<option value="none">' + (data.noneDisabled || 'None (Disabled)') + '</option>';
-        
+
         // Re-populate from current rows
-        rows.forEach(function(row) {
+        rows.forEach(function (row) {
             const id = row.getAttribute('data-id');
             const nameInput = row.querySelector('.mailhook-connection-name-input');
             const name = nameInput ? nameInput.value : 'New Connection';
-            
+
             const option = document.createElement('option');
             option.value = id;
             option.textContent = name;
@@ -486,18 +486,18 @@
     const backupToggle = document.getElementById('backup_enabled');
     const backupSelectorWrap = document.getElementById('backup-connection-selector-wrap');
     if (backupToggle && backupSelectorWrap) {
-        backupToggle.addEventListener('change', function() {
+        backupToggle.addEventListener('change', function () {
             backupSelectorWrap.style.display = this.checked ? 'flex' : 'none';
         });
     }
 
     if (addConnectionBtn && connectionsContainer) {
-        addConnectionBtn.addEventListener('click', function() {
+        addConnectionBtn.addEventListener('click', function () {
             const rows = connectionsContainer.querySelectorAll('.mailhook-connection-row');
             const newIndex = rows.length > 0 ? parseInt(rows[rows.length - 1].getAttribute('data-index')) + 1 : 0;
             const newId = 'mh_conn_' + Math.random().toString(36).substr(2, 9);
             const baseName = 'additional_connections[' + newIndex + ']';
-            
+
             // Remove the "No connections yet" message if it exists
             const noConnMsg = connectionsContainer.querySelector('.mailhook-no-connections');
             if (noConnMsg) noConnMsg.remove();
@@ -576,7 +576,7 @@
                     </div>
                 </div>
             `;
-            
+
             // Append template
             connectionsContainer.insertAdjacentHTML('beforeend', template);
             updateBackupSelectOptions();
@@ -589,7 +589,7 @@
         });
 
         // Event delegation for Remove Buttons, Collapse Toggle, and Name Input changes
-        connectionsContainer.addEventListener('click', function(e) {
+        connectionsContainer.addEventListener('click', function (e) {
             // Remove Connection logic
             if (e.target.classList.contains('mailhook-remove-connection-btn')) {
                 if (confirm(data.confirmDeleteConn || 'Are you sure you want to remove this connection?')) {
@@ -597,7 +597,7 @@
                     const id = row.getAttribute('data-id');
                     row.remove();
                     updateBackupSelectOptions();
-                    
+
                     if (connectionsContainer.querySelectorAll('.mailhook-connection-row').length === 0) {
                         connectionsContainer.innerHTML = '<p class="mailhook-no-connections description">No additional connections configured yet.</p>';
                         const routingContainer = document.getElementById('mailhook-routing-rules-container');
@@ -629,9 +629,9 @@
                 }
             }
         });
-        
+
         // Listen for name changes to update titles and dropdown immediately
-        connectionsContainer.addEventListener('input', function(e) {
+        connectionsContainer.addEventListener('input', function (e) {
             if (e.target.classList.contains('mailhook-connection-name-input')) {
                 const row = e.target.closest('.mailhook-connection-name-input').closest('.mailhook-connection-row');
                 const title = row.querySelector('.mailhook-connection-title');
@@ -650,10 +650,10 @@
     const rulesContainer = document.querySelector('.mailhook-rules-list');
 
     if (addRuleBtn && rulesContainer) {
-        addRuleBtn.addEventListener('click', function() {
+        addRuleBtn.addEventListener('click', function () {
             const ruleRows = rulesContainer.querySelectorAll('.mailhook-rule-row');
             const newRuleIdx = ruleRows.length;
-            
+
             // Get current connections for the select
             const connections = [];
             connectionsContainer.querySelectorAll('.mailhook-connection-row').forEach(row => {
@@ -722,7 +722,7 @@
         });
 
         // Event delegation for all routing UI
-        rulesContainer.addEventListener('click', function(e) {
+        rulesContainer.addEventListener('click', function (e) {
             const target = e.target;
 
             // 1. Remove Rule
@@ -782,9 +782,9 @@
                 const groupRow = target.closest('.mailhook-group-row');
                 const groupsContainer = groupRow.closest('.mailhook-groups-container');
                 const ruleRow = groupRow.closest('.mailhook-rule-row');
-                
+
                 groupRow.remove();
-                
+
                 // If last group, remove rule? Or just re-index? 
                 // Let's re-index. If no groups, rule is effectively empty.
                 if (groupsContainer.querySelectorAll('.mailhook-group-row').length === 0) {
@@ -799,11 +799,11 @@
                 const conditionsContainer = target.closest('.mailhook-conditions-container');
                 const groupRow = target.closest('.mailhook-group-row');
                 const ruleRow = target.closest('.mailhook-rule-row');
-                
+
                 const ruleIdx = ruleRow.getAttribute('data-index');
                 const groupIdx = groupRow.getAttribute('data-index');
                 const newCondIdx = conditionsContainer.querySelectorAll('.mailhook-condition-row').length;
-                
+
                 const baseName = `routing_rules[${ruleIdx}][groups][${groupIdx}][conditions][${newCondIdx}]`;
 
                 const condTemplate = `
@@ -847,7 +847,7 @@
         const ruleRows = document.querySelectorAll('.mailhook-rule-row');
         ruleRows.forEach((ruleRow, ruleIdx) => {
             ruleRow.setAttribute('data-index', ruleIdx);
-            
+
             // Update connection select name
             const connSelect = ruleRow.querySelector('.mailhook-rule-selector select');
             if (connSelect) {
@@ -858,7 +858,7 @@
             const groupRows = ruleRow.querySelectorAll('.mailhook-group-row');
             groupRows.forEach((groupRow, groupIdx) => {
                 groupRow.setAttribute('data-index', groupIdx);
-                
+
                 // Update separator (none for first group)
                 let separator = groupRow.querySelector('.mailhook-group-separator');
                 if (groupIdx === 0) {
@@ -876,7 +876,7 @@
                 const condRows = groupRow.querySelectorAll('.mailhook-condition-row');
                 condRows.forEach((condRow, condIdx) => {
                     condRow.setAttribute('data-index', condIdx);
-                    
+
                     const inputs = condRow.querySelectorAll('select, input');
                     inputs.forEach(input => {
                         const name = input.name;

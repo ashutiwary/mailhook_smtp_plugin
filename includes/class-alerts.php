@@ -99,9 +99,12 @@ class MailHook_Alerts {
             $original_subject = wp_strip_all_tags( $error_data['subject'] );
         }
 
-        $site_name = get_bloginfo( 'name' );
-        $site_url  = get_bloginfo( 'url' );
-        $logs_url  = admin_url( 'admin.php?page=mailhook-logs' );
+        $site_name       = esc_html( get_bloginfo( 'name' ) );
+        $site_url        = esc_url( get_bloginfo( 'url' ) );
+        $logs_url        = esc_url( admin_url( 'admin.php?page=mailhook-logs' ) );
+        $error_message   = esc_html( $error_message );
+        $original_to     = esc_html( $original_to );
+        $original_subject = esc_html( $original_subject );
 
         $subject = sprintf( '[%s] MailHook: Email Delivery Failed', $site_name );
 
@@ -114,7 +117,7 @@ class MailHook_Alerts {
                 </div>
                 <div style='padding: 24px;'>
                     <p>An email failed to send from your WordPress site <strong>{$site_name}</strong> ({$site_url}).</p>
-                    
+
                     <h3 style='border-bottom: 1px solid #eee; padding-bottom: 8px;'>Error Details:</h3>
                     <p style='background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 12px; font-family: monospace;'>
                         {$error_message}
@@ -169,7 +172,7 @@ class MailHook_Alerts {
              wp_send_json_error( __( 'No valid alert emails configured. Please add an email address and save settings first.', 'mailhook' ) );
         }
 
-        $site_name = get_bloginfo( 'name' );
+        $site_name = esc_html( get_bloginfo( 'name' ) );
         $subject = sprintf( '[%s] MailHook: Test Alert Notification', $site_name );
 
         $message = "

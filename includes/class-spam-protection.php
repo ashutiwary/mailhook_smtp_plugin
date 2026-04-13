@@ -182,8 +182,7 @@ class MailHook_Spam_Protection {
         // Basic nonce verification for public endpoints
         $nonce = isset( $json_params['nonce'] ) ? $json_params['nonce'] : $request->get_param( 'nonce' );
         if ( ! wp_verify_nonce( $nonce, 'mailhook_verify_human' ) ) {
-            // Because nonces can be weird for logged-out users on cached pages, we allow fallback for now
-            // But ideal is to enforce it: return new WP_Error( 'rest_forbidden', 'Invalid nonce.', array( 'status' => 403 ) );
+            return new WP_Error( 'rest_forbidden', __( 'Invalid nonce.', 'mailhook' ), array( 'status' => 403 ) );
         }
 
         $settings = get_option( 'mailhook_settings', array() );
@@ -194,7 +193,7 @@ class MailHook_Spam_Protection {
 
         // If math is required, check it. Otherwise, assume human if they clicked the button.
         if ( $require_math !== '1' || ( $answer === $expected && $expected !== 0 ) ) {
-            $ip = $_SERVER['REMOTE_ADDR'];
+            $ip = self::get_user_ip();
             self::unblock_ip( $ip );
             return rest_ensure_response( array( 'success' => true ) );
         }

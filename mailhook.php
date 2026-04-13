@@ -3,7 +3,7 @@
  * Plugin Name: MailHook
  * Plugin URI:  https://github.com/your-username/mailhook
  * Description: A lightweight WordPress SMTP plugin that reconfigures wp_mail() to send emails through any SMTP server — reliable, secure, and easy to set up.
- * Version:     1.0.0
+ * Version:     1.0.3
  * Author:      Ashu Tiwary
  * Author URI:  https://yourwebsite.com
  * License:     GPL-2.0-or-later

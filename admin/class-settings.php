@@ -1200,3 +1200,4 @@ class MailHook_Settings {
         <?php endforeach;
     }
 }
+

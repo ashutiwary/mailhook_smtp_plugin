@@ -49,8 +49,7 @@ class MailHook_Controls {
             add_filter( 'send_site_admin_email_change_notification', '__return_false', 999 );
         }
         if ( ! $this->is_enabled( 'admin_email_changed' ) ) {
-            // This hook is used for network admin email changes and some site-level changes in newer WP
-            add_filter( 'send_site_admin_email_change_notification', '__return_false', 999 );
+            add_filter( 'send_network_admin_email_change_notification', '__return_false', 999 );
         }
 
         // Change of User Email or Password
@@ -72,7 +71,6 @@ class MailHook_Controls {
 
         // Personal Data Requests
         if ( ! $this->is_enabled( 'privacy_export_erasure_request' ) ) {
-            add_filter( 'wp_privacy_personal_data_export_file_created', '__return_false', 999 );
             add_filter( 'user_request_action_confirmed', '__return_false', 999 );
         }
         if ( ! $this->is_enabled( 'privacy_admin_erased_data' ) ) {

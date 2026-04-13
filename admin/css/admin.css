@@ -44,7 +44,9 @@
 }
 
 .mailhook-nav-tabs {
-    display: flex; width: 100%; box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
     gap: 8px;
     padding: 6px;
     margin: 0;
@@ -57,7 +59,9 @@
     font-size: 14px;
     font-weight: 500;
     color: #64748b;
-    padding: 10px 12px; flex: 1; text-align: center;
+    padding: 10px 12px;
+    flex: 1;
+    text-align: center;
     background: transparent;
     border: none !important;
     border-radius: 8px;
@@ -726,7 +730,9 @@
 }
 
 .mailhook-page-btn {
-    display: flex; width: 100%; box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
     align-items: center;
     justify-content: center;
     min-width: 34px;
@@ -1158,7 +1164,7 @@
     font-size: 14px;
     font-weight: 500;
     color: #fff;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     opacity: 0;
     transform: translateY(12px);
     transition: opacity 0.3s, transform 0.3s;
@@ -1171,9 +1177,17 @@
     transform: translateY(0);
 }
 
-.mh-toast-success { background: #059669; }
-.mh-toast-error   { background: #dc2626; }
-.mh-toast-info    { background: #0129ac; }
+.mh-toast-success {
+    background: #059669;
+}
+
+.mh-toast-error {
+    background: #dc2626;
+}
+
+.mh-toast-info {
+    background: #0129ac;
+}
 
 
 /* ── Main report card ── */
@@ -1231,15 +1245,34 @@
     flex-shrink: 0;
 }
 
-.mh-dot-total  { background: #6366f1; }
-.mh-dot-sent   { background: #22c55e; }
-.mh-dot-failed { background: #ef4444; }
-.mh-dot-rate   { background: #f59e0b; }
+.mh-dot-total {
+    background: #6366f1;
+}
+
+.mh-dot-sent {
+    background: #22c55e;
+}
+
+.mh-dot-failed {
+    background: #ef4444;
+}
+
+.mh-dot-rate {
+    background: #f59e0b;
+}
 
 /* ── Delivery rate badge colors ── */
-.mh-rate-good { color: #059669 !important; }
-.mh-rate-warn { color: #d97706 !important; }
-.mh-rate-bad  { color: #dc2626 !important; }
+.mh-rate-good {
+    color: #059669 !important;
+}
+
+.mh-rate-warn {
+    color: #d97706 !important;
+}
+
+.mh-rate-bad {
+    color: #dc2626 !important;
+}
 
 /* ── Chart canvas wrapper ── */
 .mailhook-chart-wrapper {
@@ -1300,7 +1333,7 @@
 .mh-range-select:focus {
     border-color: #0129ac;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(1,41,172,0.12);
+    box-shadow: 0 0 0 3px rgba(1, 41, 172, 0.12);
 }
 
 /* Filter button */
@@ -1359,7 +1392,7 @@
 .mh-custom-range input[type="date"]:focus {
     border-color: #0129ac;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(1,41,172,0.12);
+    box-shadow: 0 0 0 3px rgba(1, 41, 172, 0.12);
 }
 
 .mh-to-label {
@@ -1381,7 +1414,7 @@
 
 .mh-search-input:focus {
     border-color: #0129ac !important;
-    box-shadow: 0 0 0 3px rgba(1,41,172,0.12) !important;
+    box-shadow: 0 0 0 3px rgba(1, 41, 172, 0.12) !important;
     outline: none !important;
 }
 
@@ -1426,10 +1459,24 @@
     vertical-align: middle;
 }
 
-.mh-th-subject { width: 36%; }
-.mh-th-source  { width: 20%; }
-.mh-th-num     { text-align: center; white-space: nowrap; width: 100px; }
-.mh-th-graph   { text-align: center; width: 60px; }
+.mh-th-subject {
+    width: 36%;
+}
+
+.mh-th-source {
+    width: 20%;
+}
+
+.mh-th-num {
+    text-align: center;
+    white-space: nowrap;
+    width: 100px;
+}
+
+.mh-th-graph {
+    text-align: center;
+    width: 60px;
+}
 
 .mh-td-subject {
     color: #1e293b;
@@ -1437,7 +1484,9 @@
     word-break: break-word;
 }
 
-.mh-td-source { max-width: 180px; }
+.mh-td-source {
+    max-width: 180px;
+}
 
 /* percentage hint */
 .mh-pct {
@@ -1448,8 +1497,15 @@
 }
 
 /* colour classes */
-.mh-sent-num   { color: #059669; font-weight: 500; }
-.mh-failed-num { color: #dc2626; font-weight: 500; }
+.mh-sent-num {
+    color: #059669;
+    font-weight: 500;
+}
+
+.mh-failed-num {
+    color: #dc2626;
+    font-weight: 500;
+}
 
 /* Graph icon button */
 .mh-graph-btn {
@@ -1460,7 +1516,9 @@
     cursor: pointer;
     color: #64748b;
     line-height: 1;
-    display: flex; width: 100%; box-sizing: border-box;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
     align-items: center;
     justify-content: center;
     transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -1493,8 +1551,13 @@
     white-space: nowrap;
 }
 
-.mailhook-report-table tbody tr { transition: background 0.15s; }
-.mailhook-report-table tbody tr:hover { background: #f8fafc; }
+.mailhook-report-table tbody tr {
+    transition: background 0.15s;
+}
+
+.mailhook-report-table tbody tr:hover {
+    background: #f8fafc;
+}
 
 .mailhook-report-table tbody td {
     padding: 11px 14px;
@@ -1552,20 +1615,44 @@
 
 /* ── Responsive ── */
 @media (max-width: 1024px) {
-    .mh-report-card-header { flex-direction: column; align-items: flex-start; }
-    .mh-legend-stats { gap: 12px; }
+    .mh-report-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mh-legend-stats {
+        gap: 12px;
+    }
 }
 
 @media (max-width: 782px) {
-    .mh-report-filter-bar { flex-direction: column; align-items: flex-start; }
-    .mh-search-input { width: 100% !important; }
-    .mh-th-source, .mh-td-source { display: none; }
-    .mh-col-bar { display: none; }
+    .mh-report-filter-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .mh-search-input {
+        width: 100% !important;
+    }
+
+    .mh-th-source,
+    .mh-td-source {
+        display: none;
+    }
+
+    .mh-col-bar {
+        display: none;
+    }
 }
 
 @media (max-width: 600px) {
-    .mailhook-stats-row { grid-template-columns: 1fr 1fr; }
-    .mh-legend-stats { display: none; }
+    .mailhook-stats-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mh-legend-stats {
+        display: none;
+    }
 }
 
 
@@ -1601,7 +1688,7 @@
     background: #0129ac;
     border-color: #0129ac;
     color: #fff;
-    box-shadow: 0 2px 8px rgba(1,41,172,0.25);
+    box-shadow: 0 2px 8px rgba(1, 41, 172, 0.25);
 }
 
 /* ── Custom Date Range Panel ── */
@@ -1638,7 +1725,7 @@
 .mh-custom-range input[type="date"]:focus {
     border-color: #0129ac;
     outline: none;
-    box-shadow: 0 0 0 3px rgba(1,41,172,0.12);
+    box-shadow: 0 0 0 3px rgba(1, 41, 172, 0.12);
 }
 
 /* ── Chart ── */
@@ -1647,9 +1734,17 @@
 }
 
 /* ── Delivery Rate badge colors ── */
-.mh-rate-good  { color: #059669; }
-.mh-rate-warn  { color: #d97706; }
-.mh-rate-bad   { color: #dc2626; }
+.mh-rate-good {
+    color: #059669;
+}
+
+.mh-rate-warn {
+    color: #d97706;
+}
+
+.mh-rate-bad {
+    color: #dc2626;
+}
 
 /* ── Report Tables (Source / Subject) ── */
 .mailhook-report-table {
@@ -1698,8 +1793,15 @@
     width: 80px;
 }
 
-.mh-sent-num   { color: #059669; font-weight: 500; }
-.mh-failed-num { color: #dc2626; font-weight: 500; }
+.mh-sent-num {
+    color: #059669;
+    font-weight: 500;
+}
+
+.mh-failed-num {
+    color: #dc2626;
+    font-weight: 500;
+}
 
 /* ── Progress Bar (Source share) ── */
 .mh-col-bar {
@@ -1774,11 +1876,11 @@
     margin-bottom: 16px;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .mailhook-connection-row:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .mailhook-connection-header {
@@ -2234,3 +2336,4 @@
 .mailhook-controls-section .mailhook-table td {
     vertical-align: middle;
 }
+

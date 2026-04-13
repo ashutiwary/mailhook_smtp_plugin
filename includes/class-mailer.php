@@ -82,12 +82,12 @@ class MailHook_Mailer {
                 }
 
                 // 3. Check Rate Limit
-                if ( MailHook_Spam_Protection::is_ip_blocked( $ip ) ) {
+                if ( MailHook_Spam_Protection::is_ip_blocked( $user_ip ) ) {
                     // Short-circuit wp_mail(), return false simulating failure
                     return false;
                 } else {
                     // Not blocked, start the 5-minute timeout countdown
-                    MailHook_Spam_Protection::record_ip( $ip );
+                    MailHook_Spam_Protection::record_ip( $user_ip );
                 }
             }
         }
@@ -118,7 +118,7 @@ class MailHook_Mailer {
         $phpmailer->Host = $conn['smtp_host'];
 
         // Clamp port to valid range
-        $port = intval( $this->settings['smtp_port'] );
+        $port = intval( $conn['smtp_port'] );
         $phpmailer->Port = ( $port >= 1 && $port <= 65535 ) ? $port : 587;
 
         // Validate encryption against allowlist before assigning
