@@ -113,12 +113,12 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(restUrl, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': restNonce
                 },
                 body: JSON.stringify({
                     answer: answer,
-                    expected: expected,
-                    nonce: restNonce
+                    expected: expected
                 })
             })
             .then(res => res.json())

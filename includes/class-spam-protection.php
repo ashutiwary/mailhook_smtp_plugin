@@ -148,7 +148,7 @@ class MailHook_Spam_Protection {
 
         wp_localize_script( 'mailhook-spam-protect', 'mailhookSpamVars', array(
             'rest_url'       => esc_url_raw( rest_url( 'mailhook/v1/verify-human' ) ),
-            'nonce'          => wp_create_nonce( 'mailhook_verify_human' ),
+            'nonce'          => wp_create_nonce( 'wp_rest' ),
             'require_math'   => isset( $settings['spam_require_math'] ) ? $settings['spam_require_math'] : '1',
             'block_duration' => self::get_block_duration() * 60 * 1000,
             'message'        => wp_kses_post( $message ),
@@ -178,12 +178,6 @@ class MailHook_Spam_Protection {
      */
     public function verify_human_callback( $request ) {
         $json_params = $request->get_json_params();
-        
-        // Basic nonce verification for public endpoints
-        $nonce = isset( $json_params['nonce'] ) ? $json_params['nonce'] : $request->get_param( 'nonce' );
-        if ( ! wp_verify_nonce( $nonce, 'mailhook_verify_human' ) ) {
-            return new WP_Error( 'rest_forbidden', __( 'Invalid nonce.', 'mailhook' ), array( 'status' => 403 ) );
-        }
 
         $settings = get_option( 'mailhook_settings', array() );
         $require_math = isset( $settings['spam_require_math'] ) ? $settings['spam_require_math'] : '1';
