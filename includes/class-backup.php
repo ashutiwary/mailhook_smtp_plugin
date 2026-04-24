@@ -30,10 +30,13 @@ class MailHook_Backup {
         $this->settings = get_option( 'mailhook_settings', array() );
 
         // Only register if backup is enabled and a connection is selected
-        if ( isset( $this->settings['backup_enabled'] ) && $this->settings['backup_enabled'] === '1' && 
+        if ( isset( $this->settings['backup_enabled'] ) && $this->settings['backup_enabled'] === '1' &&
              ! empty( $this->settings['backup_connection_id'] ) && $this->settings['backup_connection_id'] !== 'none' ) {
             // Hook in early to attempt retry before alerts fire
             add_action( 'wp_mail_failed', array( $this, 'handle_failure' ), 5 );
+            // Register the reset hook once here so is_retrying is cleared at the end
+            // of each wp_mail_failed iteration (priority 100 runs after alerts at 10).
+            add_action( 'wp_mail_failed', array( $this, 'reset_retry_flag' ), 100 );
         }
     }
 
@@ -86,7 +89,7 @@ class MailHook_Backup {
 
         // Set the override and retry
         self::$is_retrying = true;
-        
+
         if ( class_exists( 'MailHook_Mailer' ) ) {
             MailHook_Mailer::set_connection_override( $backup_conn );
         }
@@ -99,10 +102,9 @@ class MailHook_Backup {
             MailHook_Mailer::set_connection_override( null );
         }
 
-        // We stay in $is_retrying = true; during the scope of the *first* failure handler
-        // so that the Alert handler (which runs next at priority 10) knows to skip.
-        // We reset it at a very late priority on the same hook.
-        add_action( 'wp_mail_failed', array( $this, 'reset_retry_flag' ), 100 );
+        // $is_retrying stays true until priority 100 on the outer wp_mail_failed
+        // iteration clears it — this ensures the Alert handler at priority 10 skips
+        // the alert when the backup retry succeeded.
     }
 
     /**

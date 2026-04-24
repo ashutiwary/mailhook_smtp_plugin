@@ -568,8 +568,10 @@ class MailHook_Logger {
         $ids = isset( $_POST['ids'] ) ? (array) $_POST['ids'] : array();
 
         if ( in_array( 'all', $ids, true ) ) {
+            // Use DELETE instead of TRUNCATE — TRUNCATE requires DROP privilege which
+            // many shared hosts don't grant, and would silently fail there.
             // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.DirectDatabaseQuery
-            $wpdb->query( "TRUNCATE TABLE {$table}" );
+            $wpdb->query( "DELETE FROM {$table}" );
         } else {
             $ids = array_filter( array_map( 'intval', $ids ) );
             if ( ! empty( $ids ) ) {

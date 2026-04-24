@@ -18,6 +18,20 @@ class MailHook_Email_Report {
 
 	const TABLE = 'mailhook_logs';
 
+	/**
+	 * Resolved start of the currently rendered date range.
+	 *
+	 * @var string
+	 */
+	private $current_from = '';
+
+	/**
+	 * Resolved end of the currently rendered date range.
+	 *
+	 * @var string
+	 */
+	private $current_to = '';
+
 	/* ─────────────────────────── Bootstrap ─────────────────────────── */
 
 	public function __construct() {

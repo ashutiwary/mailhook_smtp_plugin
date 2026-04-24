@@ -173,9 +173,9 @@ class MailHook_Mailer {
         $args['message'] = $message;
 
         // Force content type to HTML
-        $headers = $args['headers'];
+        $headers = $args['headers'] ?? '';
         if ( ! is_array( $headers ) ) {
-            $headers = explode( "\n", str_replace( "\r\n", "\n", $headers ) );
+            $headers = $headers === '' ? array() : explode( "\n", str_replace( "\r\n", "\n", $headers ) );
         }
         
         // Remove existing Content-Type headers

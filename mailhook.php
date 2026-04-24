@@ -53,11 +53,13 @@ function mailhook_init() {
         new MailHook_Templates();
         new MailHook_Test_Mail();
         new MailHook_Email_Report();
-        new MailHook_Routing();
     }
 
     // Initialize mailer (always — so all wp_mail calls go through SMTP)
     new MailHook_Mailer();
+
+    // Initialize smart routing (always — routes must apply to frontend emails too)
+    new MailHook_Routing();
 
     // Initialize email logger (always — captures all wp_mail events)
     new MailHook_Logger();

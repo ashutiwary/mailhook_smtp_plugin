@@ -71,16 +71,29 @@ class MailHook_Spam_Protection {
     }
 
     /**
-     * Get the user's IP address, accounting for reverse proxies.
+     * Get the user's IP address.
+     *
+     * Only REMOTE_ADDR is trusted by default. Forwarded-IP headers like
+     * X-Forwarded-For and Client-IP are user-supplied and can be spoofed
+     * to bypass IP blocks and rate limits. Sites that sit behind a trusted
+     * reverse proxy can opt in to the forwarded header via the
+     * `mailhook_trust_forwarded_ip` filter.
      */
     public static function get_user_ip() {
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-        if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-            $proxies = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] );
-            $ip = trim( current( $proxies ) );
-        } elseif ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) ) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        $ip = isset( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '';
+
+        if ( apply_filters( 'mailhook_trust_forwarded_ip', false ) ) {
+            if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+                $proxies     = explode( ',', $_SERVER['HTTP_X_FORWARDED_FOR'] );
+                $candidate   = trim( current( $proxies ) );
+                if ( filter_var( $candidate, FILTER_VALIDATE_IP ) ) {
+                    $ip = $candidate;
+                }
+            } elseif ( ! empty( $_SERVER['HTTP_CLIENT_IP'] ) && filter_var( $_SERVER['HTTP_CLIENT_IP'], FILTER_VALIDATE_IP ) ) {
+                $ip = $_SERVER['HTTP_CLIENT_IP'];
+            }
         }
+
         return $ip;
     }
 

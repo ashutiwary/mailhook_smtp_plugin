@@ -133,8 +133,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Re-trigger the form submission safely
                     if (originalTarget && typeof originalTarget.submit === 'function' && originalTarget.nodeName === 'FORM') {
                         originalTarget.dataset.mailhookVerified = '1';
+                        // Dispatch the event first so AJAX-based form plugins (CF7, Elementor, etc.) can handle it.
                         var evt = new Event('submit', { cancelable: true, bubbles: true });
-                        originalTarget.dispatchEvent(evt);
+                        var defaultAllowed = originalTarget.dispatchEvent(evt);
+                        // For plain HTML forms the synthetic event alone won't submit — fall back to native submit.
+                        if (defaultAllowed) {
+                            originalTarget.submit();
+                        }
                     }
                 } else {
                     var errorDetails = data.message ? data.message : 'Unknown error';

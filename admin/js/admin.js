@@ -881,8 +881,11 @@
                     inputs.forEach(input => {
                         const name = input.name;
                         if (name) {
-                            const field = name.split(']').pop().replace('[', ''); // matches [field], [operator], [value]
-                            input.name = `routing_rules[${ruleIdx}][groups][${groupIdx}][conditions][${condIdx}][${field}]`;
+                            const m = name.match(/\[([^\[\]]+)\]$/);
+                            const field = m ? m[1] : '';
+                            if (field) {
+                                input.name = `routing_rules[${ruleIdx}][groups][${groupIdx}][conditions][${condIdx}][${field}]`;
+                            }
                         }
                     });
 
