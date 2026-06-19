@@ -158,6 +158,13 @@ class MailHook_Mailer {
 
         $message = $args['message'];
 
+        // Don't wrap a message that is already a complete HTML document — doing
+        // so would nest <html> documents. This covers the plugin's own alert and
+        // test emails as well as other plugins that send full HTML emails.
+        if ( stripos( $message, '<html' ) !== false || stripos( $message, '<!doctype' ) !== false ) {
+            return $args;
+        }
+
         // Only convert to basic HTML when the message is plain text. Any '<'
         // means it already contains markup, so running nl2br()/make_clickable()
         // would inject stray <br> tags and mangle real HTML emails.

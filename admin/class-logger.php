@@ -196,6 +196,11 @@ class MailHook_Logger {
         $trace  = debug_backtrace( DEBUG_BACKTRACE_IGNORE_ARGS, 15 ); // phpcs:ignore
         $source = 'WordPress Core';
 
+        // This plugin's own folder name, so we don't attribute our alert/test/
+        // resend emails to ourselves. Works regardless of the install folder
+        // (e.g. "MailHook smtp" locally, "mailhook" on WordPress.org).
+        $self_dir = defined( 'MAILHOOK_PLUGIN_BASENAME' ) ? dirname( MAILHOOK_PLUGIN_BASENAME ) : '';
+
         foreach ( $trace as $frame ) {
             if ( empty( $frame['file'] ) ) {
                 continue;
@@ -206,7 +211,7 @@ class MailHook_Logger {
             // Check plugins
             if ( strpos( $file, '/plugins/' ) !== false ) {
                 preg_match( '#/plugins/([^/]+)/#', $file, $m );
-                if ( ! empty( $m[1] ) && $m[1] !== 'MailHook smtp' ) {
+                if ( ! empty( $m[1] ) && $m[1] !== $self_dir ) {
                     $source = 'Plugin: ' . $m[1];
                     break;
                 }

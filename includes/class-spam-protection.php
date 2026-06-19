@@ -200,13 +200,15 @@ class MailHook_Spam_Protection {
             'require_math'   => isset( $settings['spam_require_math'] ) ? $settings['spam_require_math'] : '1',
             'block_duration' => self::get_block_duration() * 60 * 1000,
             'message'        => wp_kses_post( $message ),
-            
-            // New Blocking Fields
+
+            // Blocking fields. NOTE: the raw blocked-keyword list and the
+            // visitor's IP are intentionally NOT sent to the browser — exposing
+            // the keyword blocklist in page source lets spammers route around it.
+            // Keyword and IP blocking are enforced server-side in
+            // MailHook_Mailer::pre_flight_spam_check().
             'is_permanently_blocked' => self::is_permanently_blocked_ip( self::get_user_ip() ) ? '1' : '0',
-            'blocked_keywords'       => self::get_blocked_keywords(),
             'ip_message'             => wp_kses_post( $ip_message ),
             'kw_message'             => wp_kses_post( $kw_message ),
-            'user_ip'                => self::get_user_ip(),
         ) );
     }
 

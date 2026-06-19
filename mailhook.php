@@ -3,7 +3,7 @@
  * Plugin Name: MailHook
  * Plugin URI:  https://github.com/your-username/mailhook
  * Description: A lightweight WordPress SMTP plugin that reconfigures wp_mail() to send emails through any SMTP server — reliable, secure, and easy to set up.
- * Version:     1.0.3
+ * Version:     1.0.0
  * Author:      Ashu Tiwary
  * Author URI:  https://yourwebsite.com
  * License:     GPL-2.0-or-later
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants
-define( 'MAILHOOK_VERSION',      '1.0.3' );
+define( 'MAILHOOK_VERSION',      '1.0.0' );
 define( 'MAILHOOK_PLUGIN_DIR',   plugin_dir_path( __FILE__ ) );
 define( 'MAILHOOK_PLUGIN_URL',   plugin_dir_url( __FILE__ ) );
 define( 'MAILHOOK_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
@@ -53,6 +53,15 @@ function mailhook_init() {
         new MailHook_Templates();
         new MailHook_Test_Mail();
         new MailHook_Email_Report();
+    }
+
+    // Ensure the logs table exists for this site. The activation hook only runs
+    // on the site where the plugin is activated, so multisite subsites (and sites
+    // upgraded without re-activation) would otherwise never get the table and
+    // logging/reports would fail silently. Gated on the stored DB version so the
+    // dbDelta() check runs once per site, not on every request.
+    if ( get_option( 'mailhook_db_version' ) !== MailHook_Logger::DB_VERSION ) {
+        MailHook_Logger::install_table();
     }
 
     // Initialize mailer (always — so all wp_mail calls go through SMTP)

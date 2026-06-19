@@ -292,6 +292,13 @@ class MailHook_Settings {
      * @return string
      */
     private function encrypt_password( $password ) {
+        // Guard: without OpenSSL we can't encrypt. Store as-is so the matching
+        // decrypt_password() (which has the same guard) returns it unchanged,
+        // rather than persisting corrupted base64( iv . false ) data.
+        if ( ! function_exists( 'openssl_encrypt' ) ) {
+            return $password;
+        }
+
         $key       = hash( 'sha256', AUTH_KEY, true );
         $iv        = openssl_random_pseudo_bytes( openssl_cipher_iv_length( 'AES-256-CBC' ) );
         $encrypted = openssl_encrypt( $password, 'AES-256-CBC', $key, OPENSSL_RAW_DATA, $iv );
