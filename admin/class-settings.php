@@ -139,8 +139,10 @@ class MailHook_Settings {
             'from_name'       => sanitize_text_field( wp_unslash( $_POST['from_name'] ?? '' ) ),
         );
 
-        // Encrypt password before saving
-        $password = isset( $_POST['smtp_password'] ) ? $_POST['smtp_password'] : '';
+        // Encrypt password before saving. wp_unslash() is required because
+        // WordPress slash-escapes superglobals; without it a password
+        // containing \ ' or " would be stored (and later used) corrupted.
+        $password = isset( $_POST['smtp_password'] ) ? wp_unslash( $_POST['smtp_password'] ) : '';
         if ( ! empty( $password ) ) {
             $settings['smtp_password'] = $this->encrypt_password( $password );
         } else {
@@ -190,8 +192,8 @@ class MailHook_Settings {
                     'is_collapsed'    => sanitize_text_field( $conn['is_collapsed'] ?? '0' ),
                 );
 
-                // Handle password for this connection
-                $pass = $conn['smtp_password'] ?? '';
+                // Handle password for this connection (unslash — see note above)
+                $pass = isset( $conn['smtp_password'] ) ? wp_unslash( $conn['smtp_password'] ) : '';
                 if ( ! empty( $pass ) && $pass !== '********' ) {
                     $sanitized['smtp_password'] = $this->encrypt_password( $pass );
                 } else {

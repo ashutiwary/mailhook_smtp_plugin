@@ -158,8 +158,10 @@ class MailHook_Mailer {
 
         $message = $args['message'];
 
-        // If message is plain text, convert to basic HTML
-        if ( strpos( $message, '<' ) === false || strpos( $message, 'html>' ) === false ) {
+        // Only convert to basic HTML when the message is plain text. Any '<'
+        // means it already contains markup, so running nl2br()/make_clickable()
+        // would inject stray <br> tags and mangle real HTML emails.
+        if ( strpos( $message, '<' ) === false ) {
             // Convert plain text links to clickable links and newlines to <br>
             $message = make_clickable( $message );
             $message = nl2br( $message );

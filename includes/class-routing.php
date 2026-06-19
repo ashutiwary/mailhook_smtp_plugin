@@ -38,8 +38,21 @@ class MailHook_Routing {
      * @param PHPMailer\PHPMailer\PHPMailer $phpmailer The PHPMailer instance.
      */
     public function evaluate_routing( $phpmailer ) {
+        // During a backup retry the connection has been chosen deliberately by
+        // the Backup handler — leave it untouched and skip routing entirely.
+        if ( class_exists( 'MailHook_Backup' ) && MailHook_Backup::is_retrying() ) {
+            return;
+        }
+
+        // Clear any override left over from a previous email in this request.
+        // Without this, an email that matches no rule would inherit the
+        // connection set by a previously-matched email (the override is static).
+        if ( class_exists( 'MailHook_Mailer' ) ) {
+            MailHook_Mailer::set_connection_override( null );
+        }
+
         $rules = $this->settings['routing_rules'] ?? array();
-        
+
         foreach ( $rules as $rule ) {
             if ( empty( $rule['connection_id'] ) || empty( $rule['groups'] ) ) {
                 continue;

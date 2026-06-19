@@ -106,32 +106,67 @@ class MailHook_Spam_Protection {
     }
 
     /**
-     * Check if the current IP is blocked from sending emails.
+     * Maximum number of emails a single IP may trigger within the block window
+     * before it is rate-limited. Defaults to 5 so that ordinary requests which
+     * legitimately send more than one email (e.g. user registration fires an
+     * admin notice AND a welcome email) are not blocked. Filterable.
+     */
+    public static function get_rate_limit_max() {
+        $settings = get_option( 'mailhook_settings', array() );
+        $max      = ! empty( $settings['spam_rate_limit_max'] ) ? intval( $settings['spam_rate_limit_max'] ) : 5;
+        return max( 1, (int) apply_filters( 'mailhook_rate_limit_max', $max ) );
+    }
+
+    /**
+     * Read the current send count for an IP within the active window.
+     *
+     * @return int
+     */
+    private static function get_ip_count( $ip ) {
+        $data = get_transient( 'mailhook_ip_' . md5( $ip ) );
+        if ( is_array( $data ) ) {
+            return (int) ( $data['count'] ?? 0 );
+        }
+        // Back-compat: an old-format transient (bare timestamp) counts as 1 send.
+        return $data ? 1 : 0;
+    }
+
+    /**
+     * Check if the current IP has reached the rate limit for sending emails.
      */
     public static function is_ip_blocked( $ip ) {
         if ( ! self::is_rate_limit_enabled() ) {
             return false;
         }
 
-        $transient_name = 'mailhook_ip_' . md5( $ip );
-        $last_sent = get_transient( $transient_name );
-
-        return ( false !== $last_sent );
+        return self::get_ip_count( $ip ) >= self::get_rate_limit_max();
     }
 
     /**
-     * Record a form submission (email sent) for the IP.
+     * Record an email send for the IP, incrementing its count within a fixed
+     * window. The window starts on the first send and is preserved on each
+     * increment, so the block is "N emails per X minutes" rather than a hard
+     * block after the very first email.
      */
     public static function record_ip( $ip ) {
         if ( ! self::is_rate_limit_enabled() ) {
             return;
         }
 
-        $duration_minutes = self::get_block_duration();
-        $transient_name   = 'mailhook_ip_' . md5( $ip );
-        
-        // Block the IP for the defined duration
-        set_transient( $transient_name, time(), $duration_minutes * MINUTE_IN_SECONDS );
+        $transient_name = 'mailhook_ip_' . md5( $ip );
+        $now            = time();
+        $window         = self::get_block_duration() * MINUTE_IN_SECONDS;
+        $data           = get_transient( $transient_name );
+
+        if ( is_array( $data ) && isset( $data['expires'] ) && $data['expires'] > $now ) {
+            $data['count'] = (int) ( $data['count'] ?? 0 ) + 1;
+            $ttl           = $data['expires'] - $now;
+        } else {
+            $data = array( 'count' => 1, 'expires' => $now + $window );
+            $ttl  = $window;
+        }
+
+        set_transient( $transient_name, $data, $ttl );
     }
 
     /**
