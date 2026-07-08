@@ -196,6 +196,7 @@ class MailHook_Spam_Protection {
 
         wp_localize_script( 'mailhook-spam-protect', 'mailhookSpamVars', array(
             'rest_url'       => esc_url_raw( rest_url( 'mailhook/v1/verify-human' ) ),
+            'kw_check_url'   => esc_url_raw( rest_url( 'mailhook/v1/check-keywords' ) ),
             'nonce'          => wp_create_nonce( 'wp_rest' ),
             'require_math'   => isset( $settings['spam_require_math'] ) ? $settings['spam_require_math'] : '1',
             'block_duration' => self::get_block_duration() * 60 * 1000,
@@ -204,9 +205,13 @@ class MailHook_Spam_Protection {
             // Blocking fields. NOTE: the raw blocked-keyword list and the
             // visitor's IP are intentionally NOT sent to the browser — exposing
             // the keyword blocklist in page source lets spammers route around it.
-            // Keyword and IP blocking are enforced server-side in
-            // MailHook_Mailer::pre_flight_spam_check().
+            // Instead the browser only learns WHETHER keyword protection is on,
+            // and submits field values to /check-keywords for a server-side
+            // verdict. IP blocking and the keyword list itself stay enforced
+            // server-side in MailHook_Mailer::pre_flight_spam_check() as a
+            // second layer (in case JS is disabled or the request is forged).
             'is_permanently_blocked' => self::is_permanently_blocked_ip( self::get_user_ip() ) ? '1' : '0',
+            'has_keyword_protection' => ! empty( $settings['spam_blocked_keywords'] ) ? '1' : '0',
             'ip_message'             => wp_kses_post( $ip_message ),
             'kw_message'             => wp_kses_post( $kw_message ),
         ) );
@@ -221,6 +226,45 @@ class MailHook_Spam_Protection {
             'callback'            => array( $this, 'verify_human_callback' ),
             'permission_callback' => '__return_true' // Publicly accessible
         ) );
+
+        register_rest_route( 'mailhook/v1', '/check-keywords', array(
+            'methods'             => 'POST',
+            'callback'            => array( $this, 'check_keywords_callback' ),
+            'permission_callback' => '__return_true' // Publicly accessible
+        ) );
+    }
+
+    /**
+     * Callback for the keyword-check REST endpoint.
+     *
+     * Runs the blocked-keyword scan server-side so the keyword list itself
+     * never has to be sent to the browser.
+     */
+    public function check_keywords_callback( $request ) {
+        $json_params = $request->get_json_params();
+        $fields      = isset( $json_params['fields'] ) && is_array( $json_params['fields'] ) ? $json_params['fields'] : array();
+
+        $blocked_keywords = self::get_blocked_keywords();
+        $blocked          = false;
+
+        if ( ! empty( $blocked_keywords ) ) {
+            $full_text = '';
+            foreach ( $fields as $field ) {
+                if ( is_string( $field ) ) {
+                    $full_text .= ' ' . $field;
+                }
+            }
+            $full_text = strtolower( wp_strip_all_tags( $full_text ) );
+
+            foreach ( $blocked_keywords as $keyword ) {
+                if ( '' !== $keyword && false !== strpos( $full_text, $keyword ) ) {
+                    $blocked = true;
+                    break;
+                }
+            }
+        }
+
+        return rest_ensure_response( array( 'blocked' => $blocked ) );
     }
 
     /**

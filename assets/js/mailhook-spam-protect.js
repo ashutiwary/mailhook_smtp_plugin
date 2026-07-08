@@ -13,7 +13,8 @@ document.addEventListener('DOMContentLoaded', function() {
     var restNonce     = mailhookSpamVars.nonce;
 
     var isPermanentlyBlocked = mailhookSpamVars.is_permanently_blocked === true || mailhookSpamVars.is_permanently_blocked === '1';
-    var blockedKeywords = Array.isArray(mailhookSpamVars.blocked_keywords) ? mailhookSpamVars.blocked_keywords : [];
+    var hasKeywordProtection = mailhookSpamVars.has_keyword_protection === true || mailhookSpamVars.has_keyword_protection === '1';
+    var kwCheckUrl = mailhookSpamVars.kw_check_url;
     var ipMessage = mailhookSpamVars.ip_message;
     var kwMessage = mailhookSpamVars.kw_message;
 
@@ -156,11 +157,60 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Re-dispatch a submit event on a form that has already cleared a check,
+     * so remaining checks (or the real submission) can run.
+     */
+    function resubmitForm(target) {
+        var evt = new Event('submit', { cancelable: true, bubbles: true });
+        var defaultAllowed = target.dispatchEvent(evt);
+        if (defaultAllowed && typeof target.submit === 'function' && target.nodeName === 'FORM') {
+            target.submit();
+        }
+    }
+
+    /**
+     * Ask the server whether any field on this form contains a blocked
+     * keyword. The keyword list itself never reaches the browser — only the
+     * blocked/not-blocked verdict does.
+     */
+    function checkKeywords(target) {
+        var fields = target.querySelectorAll('input[type="text"], input[type="email"], textarea');
+        var fieldValues = [];
+        fields.forEach(function(field) {
+            fieldValues.push(field.value);
+        });
+
+        fetch(kwCheckUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': restNonce
+            },
+            body: JSON.stringify({ fields: fieldValues })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            if (data && data.blocked) {
+                showHardBlockModal(kwMessage);
+                return;
+            }
+            target.dataset.mailhookKwChecked = '1';
+            resubmitForm(target);
+        })
+        .catch(function() {
+            // Server-side pre_flight_spam_check() still enforces the block on
+            // send, so fail open here rather than trapping legit users.
+            target.dataset.mailhookKwChecked = '1';
+            resubmitForm(target);
+        });
+    }
+
+    /**
      * Intercept form submissions document-wide
      */
     document.addEventListener('submit', function(e) {
         var target = e.target;
-        
+
         // Skip if this form was already verified
         if (target.dataset.mailhookVerified === '1') {
             target.removeAttribute('data-mailhook-verified');
@@ -176,27 +226,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // 2. Check Keyword Block
-        if (blockedKeywords.length > 0) {
-            // Gather all text from inputs and textareas
-            var fields = target.querySelectorAll('input[type="text"], input[type="email"], textarea');
-            var fullText = '';
-            fields.forEach(function(field) {
-                fullText += ' ' + field.value.toLowerCase();
-            });
-
-            var keywordFound = false;
-            for (var i = 0; i < blockedKeywords.length; i++) {
-                if (fullText.indexOf(blockedKeywords[i]) !== -1) {
-                    keywordFound = true;
-                    break;
-                }
-            }
-
-            if (keywordFound) {
+        // 2. Check Keyword Block (async, server-side verdict)
+        if (hasKeywordProtection) {
+            if (target.dataset.mailhookKwChecked === '1') {
+                delete target.dataset.mailhookKwChecked;
+                // Already checked on the resubmit that led here — fall through.
+            } else {
                 e.preventDefault();
                 e.stopImmediatePropagation();
-                showHardBlockModal(kwMessage);
+                checkKeywords(target);
                 return;
             }
         }
